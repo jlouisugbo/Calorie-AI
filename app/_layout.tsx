@@ -12,6 +12,7 @@ import {
 import { Syne_700Bold, Syne_800ExtraBold } from '@expo-google-fonts/syne';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import { View, Text } from 'react-native';
+import { ToastContainer } from '@/components/ui/Toast';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -36,6 +37,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }} />
+      <ToastContainer />
     </SafeAreaProvider>
   );
 }
