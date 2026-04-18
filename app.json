@@ -16,7 +16,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.baseplate.mobile",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We use your location to personalize nearby food and restaurant recommendations while you're using the app."
+        "NSLocationWhenInUseUsageDescription": "We use your location to personalize nearby food and restaurant recommendations while you're using the app.",
+        "NSMicrophoneUsageDescription": "Used to record your voice when you talk to the AI nutrition coach.",
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
     "android": {
@@ -25,7 +27,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.baseplate.mobile",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -45,6 +51,19 @@
           "locationAlwaysAndWhenInUsePermission": "We use your location to personalize nearby food and restaurant recommendations while you're using the app.",
           "isIosBackgroundLocationEnabled": false,
           "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Used to record your voice when you talk to the AI nutrition coach."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#4f46e5"
         }
       ]
     ]

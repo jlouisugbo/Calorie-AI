@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { Text, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useRouter } from 'expo-router';
 import { useLocationStore } from '@/store/locationStore';
+import { useCalendarStore } from '@/store/calendarStore';
 
 function formatCoord(value: number) {
   return value.toFixed(5);
@@ -14,6 +16,18 @@ function formatTimestamp(ts: number) {
     return new Date(ts).toLocaleTimeString();
   } catch {
     return '—';
+  }
+}
+
+function formatEventTime(iso: string | null): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  } catch {
+    return iso;
   }
 }
 
@@ -76,24 +90,72 @@ function LocationCard() {
   );
 }
 
-export default function HomeScreen() {
+function NextEventCard() {
+  const events = useCalendarStore((s) => s.events);
+  const isLoading = useCalendarStore((s) => s.isLoading);
+  const refresh = useCalendarStore((s) => s.refresh);
   const router = useRouter();
 
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const next = events[0] ?? null;
+
+  return (
+    <Card className="mb-4">
+      <Text className="text-lg font-semibold text-text-base mb-1">Next on your calendar</Text>
+      {next ? (
+        <View className="mb-4">
+          <Text className="text-base text-text-base">{next.summary ?? '(no title)'}</Text>
+          <Text className="text-xs text-muted mt-1">
+            {formatEventTime(next.start)}
+            {next.location ? ` · ${next.location}` : ''}
+          </Text>
+        </View>
+      ) : (
+        <Text className="text-sm text-muted mb-4">
+          {isLoading ? 'Checking…' : 'No upcoming events. Connect Google Calendar to plan around your day.'}
+        </Text>
+      )}
+      <Button variant="outline" onPress={() => router.push('/(tabs)/calendar')}>
+        Open calendar
+      </Button>
+    </Card>
+  );
+}
+
+function CoachCard() {
+  const router = useRouter();
+  return (
+    <Card className="mb-4">
+      <Text className="text-lg font-semibold text-text-base mb-1">Talk to your coach</Text>
+      <Text className="text-sm text-muted mb-4">
+        Hold the orb and ask anything — "what should I eat near LAX?" or "snack
+        before my 4pm?"
+      </Text>
+      <View className="flex-row gap-2">
+        <Button onPress={() => router.push('/(tabs)/voice')}>Voice</Button>
+        <Button variant="outline" onPress={() => router.push('/(tabs)/chat')}>
+          Text chat
+        </Button>
+      </View>
+    </Card>
+  );
+}
+
+export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingVertical: 24 }}>
-        <Text className="text-4xl font-display text-text-base mb-2">Baseplate</Text>
-        <Text className="text-base font-sans text-muted mb-8">AI-powered mobile app</Text>
+        <Text className="text-4xl font-display text-text-base mb-2">Calorie-AI</Text>
+        <Text className="text-base font-sans text-muted mb-8">
+          Your context-aware nutrition agent
+        </Text>
 
+        <CoachCard />
+        <NextEventCard />
         <LocationCard />
-
-        <Card className="mb-4">
-          <Text className="text-lg font-semibold text-text-base mb-1">AI Chat</Text>
-          <Text className="text-sm text-muted mb-4">
-            Have a conversation with Claude claude-sonnet-4-6.
-          </Text>
-          <Button onPress={() => router.push('/(tabs)/chat')}>Start chatting</Button>
-        </Card>
       </ScrollView>
     </SafeAreaView>
   );
