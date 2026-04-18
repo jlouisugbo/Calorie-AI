@@ -1,0 +1,13 @@
+{
+  "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  "user_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "goals": ["High protein", "Lose weight"],
+  "dietary_restrictions": ["No time to cook", "Gluten-free"],
+  "activity_level": "sedentary",
+  "daily_calorie_target": 2000,
+  "age": 28,
+  "height": 175,
+  "weight": 75,
+  "bmi": 24.5,
+  "sex": "male"
+}

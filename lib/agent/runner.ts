@@ -1,10 +1,13 @@
 import {
-  callAnthropic,
-  type AnthropicMessageResponse,
-  type AnthropicTextMessage,
-  type AnthropicToolDef,
+  callOpenAI,
+  isFunctionCallItem,
+  parseFunctionArguments,
+  type AgentToolDef,
+  type AgentTextMessage,
+  type OpenAIInputItem,
+  type OpenAIResponse,
   type ToolUseBlock,
-} from './anthropic';
+} from './openai';
 import type { AgentContext } from './context';
 import { runTool, TOOL_DEFS } from './tools';
 
@@ -22,31 +25,55 @@ export interface AgentTrace {
 }
 
 export interface RunAgentArgs {
-  messages: AnthropicTextMessage[];
+  messages: AgentTextMessage[];
   system: string;
   ctx: AgentContext;
-  tools?: AnthropicToolDef[];
-  toolChoice?:
-    | { type: 'auto' }
-    | { type: 'any' }
-    | { type: 'tool'; name: string };
+  tools?: AgentToolDef[];
+  toolChoice?: 'auto' | 'required' | { type: 'function'; name: string };
   maxTokens?: number;
 }
 
 export interface RunAgentResult {
   text: string;
   trace: AgentTrace;
-  finalResponse: AnthropicMessageResponse;
+  finalResponse: OpenAIResponse;
   /** All assistant + tool_result turns appended during this run. */
-  appendedMessages: AnthropicTextMessage[];
+  appendedMessages: AgentTextMessage[];
 }
 
-function extractText(response: AnthropicMessageResponse): string {
+function extractText(response: OpenAIResponse): string {
   const parts: string[] = [];
-  for (const block of response.content) {
-    if (block.type === 'text') parts.push(block.text);
+  for (const block of response.output) {
+    if (block.type !== 'message') continue;
+    for (const item of block.content) {
+      if (item.type === 'output_text') parts.push(item.text);
+    }
   }
   return parts.join('\n').trim();
+}
+
+function toInputMessages(messages: AgentTextMessage[]): OpenAIInputItem[] {
+  return messages.map((message) => {
+    if (typeof message.content === 'string') {
+      return {
+        role: message.role,
+        content: message.content,
+      };
+    }
+
+    const textBlocks = message.content.filter(
+      (block): block is { type: 'text'; text: string } => block.type === 'text',
+    );
+
+    if (textBlocks.length !== message.content.length) {
+      throw new Error('runAgent only accepts plain text conversation history.');
+    }
+
+    return {
+      role: message.role,
+      content: textBlocks.map((block) => block.text).join('\n').trim(),
+    };
+  });
 }
 
 function previewResult(result: unknown): string {
@@ -59,74 +86,76 @@ function previewResult(result: unknown): string {
 }
 
 export async function runAgent(args: RunAgentArgs): Promise<RunAgentResult> {
-  const messages: AnthropicTextMessage[] = [...args.messages];
-  const appended: AnthropicTextMessage[] = [];
+  const appended: AgentTextMessage[] = [];
   const tools = args.tools ?? TOOL_DEFS;
+  const input: OpenAIInputItem[] = toInputMessages(args.messages);
   const trace: AgentTrace = {
     iterations: 0,
     toolCalls: [],
     stopReason: 'unknown',
   };
 
-  let response: AnthropicMessageResponse | null = null;
+  let response: OpenAIResponse | null = null;
 
   for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
     trace.iterations = iter + 1;
-    response = await callAnthropic({
-      messages,
-      system: args.system,
+    response = await callOpenAI({
+      input,
+      instructions: args.system,
       tools,
-      toolChoice: args.toolChoice,
+      toolChoice: iter === 0 ? args.toolChoice : 'auto',
       maxTokens: args.maxTokens,
     });
 
-    trace.stopReason = response.stop_reason;
+    const text = extractText(response);
+    const toolUses = response.output.filter(isFunctionCallItem);
+    trace.stopReason = toolUses.length > 0 ? 'tool_use' : response.status;
 
-    if (response.stop_reason !== 'tool_use') {
-      const assistantMessage: AnthropicTextMessage = {
+    if (toolUses.length === 0) {
+      const assistantMessage: AgentTextMessage = {
         role: 'assistant',
-        content: response.content,
+        content: text,
       };
-      messages.push(assistantMessage);
       appended.push(assistantMessage);
       break;
     }
 
-    const assistantMessage: AnthropicTextMessage = {
+    const assistantBlocks: Array<
+      { type: 'text'; text: string } | ToolUseBlock
+    > = [];
+    if (text) assistantBlocks.push({ type: 'text', text });
+
+    const assistantMessage: AgentTextMessage = {
       role: 'assistant',
-      content: response.content,
+      content: assistantBlocks,
     };
-    messages.push(assistantMessage);
-    appended.push(assistantMessage);
+    input.push(...response.output);
 
-    const toolUses = response.content.filter(
-      (b): b is ToolUseBlock => b.type === 'tool_use',
-    );
-
-    const toolResults: AnthropicTextMessage['content'] = [];
     for (const tu of toolUses) {
-      const { result, isError } = await runTool(tu.name, tu.input, args.ctx);
+      const toolInput = parseFunctionArguments(tu.arguments);
+      assistantBlocks.push({
+        type: 'tool_use',
+        id: tu.call_id,
+        name: tu.name,
+        input: toolInput,
+      });
+
+      const { result, isError } = await runTool(tu.name, toolInput, args.ctx);
       const preview = previewResult(result);
       trace.toolCalls.push({
         name: tu.name,
-        input: tu.input,
+        input: toolInput,
         isError,
         resultPreview: preview,
       });
-      toolResults.push({
-        type: 'tool_result',
-        tool_use_id: tu.id,
-        content: typeof result === 'string' ? result : JSON.stringify(result),
-        is_error: isError || undefined,
+      input.push({
+        type: 'function_call_output',
+        call_id: tu.call_id,
+        output: typeof result === 'string' ? result : JSON.stringify(result),
       });
     }
 
-    const userMessage: AnthropicTextMessage = {
-      role: 'user',
-      content: toolResults,
-    };
-    messages.push(userMessage);
-    appended.push(userMessage);
+    appended.push(assistantMessage);
   }
 
   if (!response) {

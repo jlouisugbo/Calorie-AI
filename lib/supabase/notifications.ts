@@ -16,13 +16,14 @@ export async function logNotification(args: {
   agentTrace?: unknown;
 }): Promise<void> {
   const sb = getServiceSupabase();
+  if (!sb) return;
   const { error } = await sb.from('notifications_log').insert({
     user_id: args.userId,
     trigger: args.trigger,
     body: args.body,
     agent_trace: args.agentTrace ?? null,
   });
-  if (error) throw new Error(`notifications_log insert failed: ${error.message}`);
+  if (error) console.warn(`notifications_log insert failed: ${error.message}`);
 }
 
 export async function recentNotificationForTrigger(
@@ -31,6 +32,7 @@ export async function recentNotificationForTrigger(
   withinMinutes: number,
 ): Promise<boolean> {
   const sb = getServiceSupabase();
+  if (!sb) return false;
   const since = new Date(Date.now() - withinMinutes * 60_000).toISOString();
   const { data, error } = await sb
     .from('notifications_log')
@@ -39,7 +41,10 @@ export async function recentNotificationForTrigger(
     .eq('trigger', trigger)
     .gte('sent_at', since)
     .limit(1);
-  if (error) throw new Error(`notifications_log check failed: ${error.message}`);
+  if (error) {
+    console.warn(`notifications_log check failed: ${error.message}`);
+    return false;
+  }
   return (data ?? []).length > 0;
 }
 
@@ -48,6 +53,7 @@ export async function setUserState(
   patch: { last_lat?: number; last_lng?: number; last_seen?: string },
 ): Promise<void> {
   const sb = getServiceSupabase();
+  if (!sb) return;
   const { error } = await sb.from('user_state').upsert(
     {
       user_id: userId,
@@ -56,7 +62,7 @@ export async function setUserState(
     },
     { onConflict: 'user_id' },
   );
-  if (error) throw new Error(`user_state upsert failed: ${error.message}`);
+  if (error) console.warn(`user_state upsert failed: ${error.message}`);
 }
 
 export interface UserStateRow {
@@ -69,11 +75,15 @@ export interface UserStateRow {
 
 export async function getUserState(userId: string): Promise<UserStateRow | null> {
   const sb = getServiceSupabase();
+  if (!sb) return null;
   const { data, error } = await sb
     .from('user_state')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
-  if (error) throw new Error(`user_state lookup failed: ${error.message}`);
+  if (error) {
+    console.warn(`user_state lookup failed: ${error.message}`);
+    return null;
+  }
   return (data as UserStateRow | null) ?? null;
 }

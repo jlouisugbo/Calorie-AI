@@ -7,13 +7,27 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase/client';
 import { registerPushToken } from '@/services/push';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// #region agent log
+console.log('[AGENT_LOG] NotificationBootstrap module loaded, hasSetHandler=', typeof Notifications?.setNotificationHandler === 'function');
+fetch('http://127.0.0.1:7767/ingest/47b8ec29-44cb-43f2-a14c-660f3b3d7b43',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b940fe'},body:JSON.stringify({sessionId:'b940fe',hypothesisId:'B',location:'NotificationBootstrap.tsx:module',message:'NotificationBootstrap module loaded',data:{hasNotifications:typeof Notifications?.setNotificationHandler==='function'},timestamp:Date.now()})}).catch(()=>{});
+// #endregion
+
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+  // #region agent log
+  fetch('http://127.0.0.1:7767/ingest/47b8ec29-44cb-43f2-a14c-660f3b3d7b43',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b940fe'},body:JSON.stringify({sessionId:'b940fe',hypothesisId:'B',location:'NotificationBootstrap.tsx:setHandler',message:'setNotificationHandler ok',data:{},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+} catch (e) {
+  // #region agent log
+  fetch('http://127.0.0.1:7767/ingest/47b8ec29-44cb-43f2-a14c-660f3b3d7b43',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b940fe'},body:JSON.stringify({sessionId:'b940fe',hypothesisId:'B',location:'NotificationBootstrap.tsx:setHandler',message:'setNotificationHandler THREW',data:{err:String(e)},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+}
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (!Device.isDevice) return null;

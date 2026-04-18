@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { useRouter } from 'expo-router';
 import { useLocationStore } from '@/store/locationStore';
 import { useCalendarStore } from '@/store/calendarStore';
+import { BiomarkersCard } from '@/components/profile/BiomarkersCard';
 
 function formatCoord(value: number) {
   return value.toFixed(5);
@@ -154,6 +155,7 @@ export default function HomeScreen() {
         </Text>
 
         <CoachCard />
+        <BiomarkersCard className="mb-4" compact />
         <NextEventCard />
         <LocationCard />
       </ScrollView>

@@ -1,124 +1,136 @@
-import { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAIStore } from '@/store/aiStore';
 import { useLocationStore } from '@/store/locationStore';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function ChatScreen() {
   const [input, setInput] = useState('');
   const scrollRef = useRef<ScrollView>(null);
-  const { messages, isLoading, error, sendMessage } = useAIStore();
+  const { messages, isLoading, sendMessage } = useAIStore();
   const coords = useLocationStore((s) => s.coords);
   const permissionStatus = useLocationStore((s) => s.permissionStatus);
 
-  const handleSend = async () => {
-    const text = input.trim();
-    if (!text || isLoading) return;
+  const SUGGESTIONS = [
+    'What should I eat next?',
+    'Am I on track today?',
+    'High protein snack ideas',
+    "I'm at an airport",
+  ];
+
+  const handleSend = (text: string) => {
+    if (!text.trim() || isLoading) return;
+    sendMessage(text);
     setInput('');
-    await sendMessage(text);
-    scrollRef.current?.scrollToEnd({ animated: true });
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <KeyboardAvoidingView
-        className="flex-1"
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
         keyboardVerticalOffset={0}
       >
-        <View className="px-4 py-3 border-b border-border">
-          <Text className="text-lg font-semibold text-text-base">Claude</Text>
-          <Text className="text-xs text-muted mt-0.5">
-            {coords
-              ? `Near ${coords.latitude.toFixed(3)}, ${coords.longitude.toFixed(3)}`
-              : permissionStatus === 'denied'
-                ? 'Location off'
-                : 'Locating…'}
-          </Text>
+        {/* Header */}
+        <View className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-100 bg-white">
+          <View className="w-10 h-10 rounded-full bg-teal-50 items-center justify-center">
+            <Text className="text-teal-600 text-lg">👤</Text>
+          </View>
+          <View>
+            <Text className="text-lg font-bold text-gray-900">Nouri</Text>
+            <Text className="text-xs text-teal-600">
+              {coords
+                ? `Near ${coords.latitude.toFixed(3)}, ${coords.longitude.toFixed(3)}`
+                : permissionStatus === 'denied'
+                  ? 'Location off'
+                  : 'Your nutrition coach'}
+            </Text>
+          </View>
         </View>
 
-        <ScrollView
+        {/* Chat Area */}
+        <ScrollView 
           ref={scrollRef}
-          className="flex-1 px-4"
-          contentContainerStyle={{ paddingVertical: 16, gap: 12 }}
+          className="flex-1 px-4 pt-4 bg-white" 
+          contentContainerStyle={{ paddingBottom: 20 }}
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
+          {/* Initial Welcome Message */}
           {messages.length === 0 && (
-            <Text className="text-center text-muted mt-8">
-              Send a message to start the conversation.
-            </Text>
+            <View className="bg-[#F8F7F4] rounded-2xl p-4 mb-4 max-w-[85%]">
+              <Text className="text-gray-800 text-base leading-6">
+                Hey! I'm Nouri, your nutrition coach. I know your goals, your macros, and what you've eaten today. Ask me anything — what to eat, whether something fits your plan, or how to hit your targets tonight.
+              </Text>
+            </View>
           )}
 
+          {/* Dynamic Messages */}
           {messages.map((msg) => (
-            <View
-              key={msg.id}
-              className={`max-w-[85%] rounded-lg px-4 py-3 ${
-                msg.role === 'user'
-                  ? 'self-end bg-primary'
-                  : 'self-start bg-surface border border-border'
+            <View 
+              key={msg.id} 
+              className={`rounded-2xl p-4 mb-4 max-w-[85%] ${
+                msg.role === 'user' ? 'bg-teal-600 self-end' : 'bg-[#F8F7F4] self-start'
               }`}
             >
-              <Text
-                className={`text-sm leading-5 ${
-                  msg.role === 'user' ? 'text-white' : 'text-text-base'
-                }`}
-              >
+              <Text className={`text-base leading-6 ${msg.role === 'user' ? 'text-white' : 'text-gray-800'}`}>
                 {msg.content}
               </Text>
             </View>
           ))}
 
+          {/* Loading State */}
           {isLoading && (
-            <View className="self-start max-w-[85%]">
-              <Skeleton className="h-10 w-48 rounded-lg" />
-            </View>
-          )}
-
-          {error && (
-            <View className="bg-red-100 rounded-lg px-4 py-3 border border-red-200">
-              <Text className="text-sm text-red-700">{error}</Text>
+            <View className="bg-[#F8F7F4] rounded-2xl p-4 mb-4 max-w-[85%] self-start">
+              <Text className="text-gray-500">Nouri is typing...</Text>
             </View>
           )}
         </ScrollView>
 
-        <View className="flex-row items-end gap-2 px-4 py-3 border-t border-border">
-          <TextInput
-            className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 text-sm text-text-base max-h-32"
-            placeholder="Message Claude…"
-            placeholderTextColor="#9ca3af"
-            value={input}
-            onChangeText={setInput}
-            multiline
-            onSubmitEditing={handleSend}
-            editable={!isLoading}
-          />
-          <TouchableOpacity
-            onPress={handleSend}
-            disabled={!input.trim() || isLoading}
-            className={`rounded-xl px-4 py-3 ${
-              !input.trim() || isLoading ? 'bg-gray-200' : 'bg-primary'
-            }`}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#ffffff" />
-            ) : (
-              <Text
-                className={`text-sm font-medium ${!input.trim() ? 'text-muted' : 'text-white'}`}
-              >
+        {/* Bottom Area: Suggestions + Input */}
+        <View className="px-4 pb-6 pt-2 bg-white border-t border-gray-100">
+          
+          {/* Quick Ask Chips */}
+          {messages.length === 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+              <View className="flex-row gap-2 pr-4">
+                {SUGGESTIONS.map((suggestion) => (
+                  <TouchableOpacity 
+                    key={suggestion}
+                    onPress={() => handleSend(suggestion)}
+                    className="px-4 py-2 rounded-full border border-gray-200 bg-white"
+                  >
+                    <Text className="text-gray-800">{suggestion}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+
+          {/* Input Bar */}
+          <View className="flex-row items-center gap-2">
+            <TextInput
+              className="flex-1 bg-[#F4F6F8] border border-[#D1D5DB] rounded-xl px-4 py-3 text-base text-gray-900"
+              placeholder="Ask Nouri anything..."
+              placeholderTextColor="#9CA3AF"
+              value={input}
+              onChangeText={setInput}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity 
+              onPress={() => handleSend(input)}
+              disabled={!input.trim() || isLoading}
+              className={`px-5 py-3 rounded-xl border ${
+                !input.trim() || isLoading 
+                  ? 'border-gray-200 bg-gray-50' 
+                  : 'border-teal-600 bg-teal-600'
+              }`}
+            >
+              <Text className={`font-semibold ${!input.trim() || isLoading ? 'text-gray-400' : 'text-white'}`}>
                 Send
               </Text>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

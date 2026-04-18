@@ -1,8 +1,10 @@
-import type { AnthropicToolDef } from './anthropic';
+import type { AgentToolDef } from './openai';
 import type { AgentContext } from './context';
 import { searchNearbyPlaces } from '@/lib/places/server';
 import { listUpcomingEvents } from '@/lib/google/calendar';
 import { getLatestBiomarkers } from '@/lib/supabase/biomarkers';
+import { getFakeCalendarEvents, shouldUseFakeCalendar } from './fake-calendar';
+import { generateBusyProBiomarkers } from './sample-biomarkers';
 
 export interface ToolDef<TInput = Record<string, unknown>> {
   name: string;
@@ -53,9 +55,15 @@ const getBiomarkers: ToolDef<{ limit?: number }> = {
     additionalProperties: false,
   },
   run: async (input, ctx) => {
-    if (!ctx.userId) return { error: 'No authenticated user.' };
-    const rows = await getLatestBiomarkers(ctx.userId, input.limit ?? 5);
-    return { biomarkers: rows };
+    const limit = input.limit ?? 5;
+    const rows = ctx.userId ? await getLatestBiomarkers(ctx.userId, limit) : [];
+    if (rows.length === 0) {
+      return {
+        biomarkers: generateBusyProBiomarkers(ctx.userId ?? 'demo', limit),
+        source: 'demo',
+      };
+    }
+    return { biomarkers: rows, source: 'real' };
   },
 };
 
@@ -82,14 +90,18 @@ const getCalendarEvents: ToolDef<{ hoursAhead?: number; maxResults?: number }> =
     additionalProperties: false,
   },
   run: async (input, ctx) => {
+    const hoursAhead = input.hoursAhead ?? 24;
+    const maxResults = input.maxResults ?? 10;
+
+    if (shouldUseFakeCalendar()) {
+      const events = getFakeCalendarEvents(hoursAhead, maxResults);
+      return { events, source: 'demo' };
+    }
+
     if (!ctx.userId) return { events: [], reason: 'no user' };
     try {
-      const events = await listUpcomingEvents(
-        ctx.userId,
-        input.hoursAhead ?? 24,
-        input.maxResults ?? 10,
-      );
-      return { events };
+      const events = await listUpcomingEvents(ctx.userId, hoursAhead, maxResults);
+      return { events, source: 'google' };
     } catch (err) {
       return {
         events: [],
@@ -149,10 +161,12 @@ export const TOOLS: ToolDef[] = [
   searchNearby as ToolDef,
 ];
 
-export const TOOL_DEFS: AnthropicToolDef[] = TOOLS.map((t) => ({
+export const TOOL_DEFS: AgentToolDef[] = TOOLS.map((t) => ({
+  type: 'function',
   name: t.name,
   description: t.description,
-  input_schema: t.input_schema,
+  parameters: t.input_schema,
+  strict: false,
 }));
 
 const TOOL_BY_NAME = new Map(TOOLS.map((t) => [t.name, t]));

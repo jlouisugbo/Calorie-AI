@@ -232,8 +232,11 @@
     --color-card-foreground: var(--color-forest-800);
     --color-surface: var(--color-beige-100);
     --color-surface-elevated: var(--color-cream-50);
-    --color-muted: var(--color-beige-200);
-    --color-muted-foreground: var(--color-olive-500);
+    /* `text-muted` consumers want a readable secondary text color, not a
+       background tint — keep these in the deep-olive range so they pass
+       contrast on cream/beige surfaces. */
+    --color-muted: var(--color-olive-600);
+    --color-muted-foreground: var(--color-olive-600);
     --color-accent: var(--color-forest-100);
     --color-accent-foreground: var(--color-forest-700);
     --color-border: var(--color-beige-300);
@@ -295,8 +298,8 @@
       --color-card-foreground: var(--color-cream-200);
       --color-surface: #192019;
       --color-surface-elevated: #202b1f;
-      --color-muted: #202b1f;
-      --color-muted-foreground: var(--color-olive-300);
+      --color-muted: var(--color-olive-200);
+      --color-muted-foreground: var(--color-olive-200);
       --color-accent: #263323;
       --color-accent-foreground: var(--color-cream-200);
       --color-border: #2c3c28;

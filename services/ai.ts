@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { ENV } from '@/constants/env';
-import type { AnthropicMessage } from '@/types';
+import type { AgentTextMessage } from '@/lib/agent/openai';
 
 const API_PATH = '/api/agent';
 
@@ -27,7 +27,7 @@ function resolveBaseUrl(): string {
 }
 
 export interface AgentTurnInput {
-  messages: AnthropicMessage[];
+  messages: AgentTextMessage[];
   userId?: string | null;
   coords?: {
     latitude: number;
@@ -43,9 +43,7 @@ export interface AgentTurnResult {
     iterations: number;
     toolCalls: {
       name: string;
-      input: Record<string, unknown>;
       isError: boolean;
-      resultPreview: string;
     }[];
     stopReason: string;
   };

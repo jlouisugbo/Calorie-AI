@@ -1,4 +1,4 @@
-import { getServiceSupabase } from './server';
+import { getServiceSupabase, requireServiceSupabase } from './server';
 
 export interface PushTokenRow {
   user_id: string;
@@ -12,7 +12,7 @@ export async function upsertPushToken(
   expoToken: string,
   platform: string | null,
 ): Promise<void> {
-  const sb = getServiceSupabase();
+  const sb = requireServiceSupabase();
   const { error } = await sb.from('push_tokens').upsert(
     {
       user_id: userId,
@@ -27,17 +27,25 @@ export async function upsertPushToken(
 
 export async function listAllPushTokens(): Promise<PushTokenRow[]> {
   const sb = getServiceSupabase();
+  if (!sb) return [];
   const { data, error } = await sb.from('push_tokens').select('*');
-  if (error) throw new Error(`push_tokens list failed: ${error.message}`);
+  if (error) {
+    console.warn(`push_tokens list failed: ${error.message}`);
+    return [];
+  }
   return (data ?? []) as PushTokenRow[];
 }
 
 export async function getUserPushTokens(userId: string): Promise<PushTokenRow[]> {
   const sb = getServiceSupabase();
+  if (!sb) return [];
   const { data, error } = await sb
     .from('push_tokens')
     .select('*')
     .eq('user_id', userId);
-  if (error) throw new Error(`push_tokens lookup failed: ${error.message}`);
+  if (error) {
+    console.warn(`push_tokens lookup failed: ${error.message}`);
+    return [];
+  }
   return (data ?? []) as PushTokenRow[];
 }
