@@ -4,10 +4,8 @@
     "slug": "baseplate-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,19 +16,27 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.baseplate.mobile"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "scheme": "baseplate-mobile",
     "experiments": {
       "typedRoutes": true
     },
-    "plugins": ["expo-router", "expo-secure-store"]
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow Calorie-AI to use your camera to scan meals.",
+          "photosPermission": "Allow Calorie-AI to access your photos to analyze meal images."
+        }
+      ]
+    ]
   }
 }
