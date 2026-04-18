@@ -7,7 +7,7 @@ import { useLocationStore } from '@/store/locationStore';
 export default function ChatScreen() {
   const [input, setInput] = useState('');
   const scrollRef = useRef<ScrollView>(null);
-  const { messages, isLoading, error, sendMessage } = useAIStore();
+  const { messages, isLoading, sendMessage } = useAIStore();
   const coords = useLocationStore((s) => s.coords);
   const permissionStatus = useLocationStore((s) => s.permissionStatus);
 
