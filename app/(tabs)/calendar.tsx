@@ -11,6 +11,8 @@ import { supabase } from '@/lib/supabase/client';
 
 WebBrowser.maybeCompleteAuthSession();
 
+const USE_FAKE_CALENDAR = process.env.EXPO_PUBLIC_USE_FAKE_CALENDAR !== 'false';
+
 const GOOGLE_DISCOVERY = {
   authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
   tokenEndpoint: 'https://oauth2.googleapis.com/token',
@@ -43,6 +45,10 @@ export default function CalendarScreen() {
   const { events, isLoading, error, refresh } = useCalendarStore();
   const [connecting, setConnecting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   const redirectUri = useMemo(() => {
     if (CONFIGURED_REDIRECT) return CONFIGURED_REDIRECT;
@@ -109,32 +115,48 @@ export default function CalendarScreen() {
       <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingVertical: 24 }}>
         <Text className="text-3xl font-display text-text-base mb-2">Calendar</Text>
         <Text className="text-base font-sans text-muted mb-6">
-          Connect Google Calendar so the agent can plan around your day.
+          The agent uses your day to time food and recovery suggestions around
+          meetings, travel, and workouts.
         </Text>
 
-        <Card className="mb-4">
-          <Text className="text-lg font-semibold text-text-base mb-1">
-            Google Calendar
-          </Text>
-          <Text className="text-sm text-muted mb-4">
-            Read-only access. We use it to time food and recovery suggestions
-            around your meetings, travel, and workouts.
-          </Text>
-          <View className="flex-row gap-2">
-            <Button onPress={handleConnect} loading={connecting} disabled={!request}>
-              Connect Google Calendar
-            </Button>
+        {USE_FAKE_CALENDAR ? (
+          <Card className="mb-4">
+            <Text className="text-lg font-semibold text-text-base mb-1">
+              Google Calendar
+            </Text>
+            <Text className="text-sm text-muted mb-4">
+              Read-only access. We use it to time food and recovery suggestions
+              around your meetings, travel, and workouts.
+            </Text>
             <Button variant="outline" onPress={() => void refresh()} loading={isLoading}>
               Refresh
             </Button>
-          </View>
-          {statusMessage ? (
-            <Text className="text-xs text-muted mt-3">{statusMessage}</Text>
-          ) : null}
-          {error ? (
-            <Text className="text-xs text-destructive mt-2">{error}</Text>
-          ) : null}
-        </Card>
+          </Card>
+        ) : (
+          <Card className="mb-4">
+            <Text className="text-lg font-semibold text-text-base mb-1">
+              Google Calendar
+            </Text>
+            <Text className="text-sm text-muted mb-4">
+              Read-only access. We use it to time food and recovery suggestions
+              around your meetings, travel, and workouts.
+            </Text>
+            <View className="flex-row gap-2">
+              <Button onPress={handleConnect} loading={connecting} disabled={!request}>
+                Connect Google Calendar
+              </Button>
+              <Button variant="outline" onPress={() => void refresh()} loading={isLoading}>
+                Refresh
+              </Button>
+            </View>
+            {statusMessage ? (
+              <Text className="text-xs text-muted mt-3">{statusMessage}</Text>
+            ) : null}
+            {error ? (
+              <Text className="text-xs text-destructive mt-2">{error}</Text>
+            ) : null}
+          </Card>
+        )}
 
         <Text className="text-sm font-semibold text-text-base mb-2 mt-2">
           Next 24 hours
@@ -147,8 +169,7 @@ export default function CalendarScreen() {
         ) : events.length === 0 ? (
           <Card>
             <Text className="text-sm text-muted">
-              No upcoming events yet. Connect your calendar above to see them
-              here.
+              No upcoming events in the next 24 hours.
             </Text>
           </Card>
         ) : (

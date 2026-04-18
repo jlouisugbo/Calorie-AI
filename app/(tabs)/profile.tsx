@@ -19,6 +19,7 @@ import {
   getLatestBiomarkersClient,
   type BiomarkerRow,
 } from '@/lib/supabase/biomarkers-client';
+import { seedSampleBiomarkers } from '@/services/biomarkers';
 import type {
   ActivityLevel,
   DietaryRestriction,
@@ -94,7 +95,11 @@ export default function ProfileScreen() {
   const calendarConnected = useCalendarStore((s) => s.isConnected);
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const [seedError, setSeedError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [provider, setProvider] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [biomarkers, setBiomarkers] = useState<BiomarkerRow[]>([]);
   const [notifStatus, setNotifStatus] = useState<NotifStatus>('unknown');
@@ -119,6 +124,10 @@ export default function ProfileScreen() {
         return;
       }
       setEmail(user.email ?? null);
+      setUserId(user.id);
+      const providerRaw =
+        (user.app_metadata as { provider?: string } | undefined)?.provider ?? null;
+      setProvider(providerRaw);
 
       const [p, bm] = await Promise.all([
         getProfile(user.id),
@@ -156,6 +165,24 @@ export default function ProfileScreen() {
       await Linking.openSettings();
     } catch {
       // ignore
+    }
+  }
+
+  async function handleSeedBiomarkers() {
+    if (!userId) {
+      setSeedError('Sign in to seed sample biomarkers.');
+      return;
+    }
+    setSeeding(true);
+    setSeedError(null);
+    try {
+      await seedSampleBiomarkers(userId, 7);
+      const fresh = await getLatestBiomarkersClient(userId, 7);
+      setBiomarkers(fresh);
+    } catch (err) {
+      setSeedError(err instanceof Error ? err.message : 'Seeding failed');
+    } finally {
+      setSeeding(false);
     }
   }
 
@@ -198,8 +225,8 @@ export default function ProfileScreen() {
         className="flex-1 px-4"
         contentContainerStyle={{ paddingVertical: 24, paddingBottom: 48 }}
       >
-        <Text className="text-4xl font-display text-text-base mb-1">Profile</Text>
-        <Text className="text-base font-sans text-muted mb-6">
+        <Text className="text-4xl font-display text-foreground mb-1">Profile</Text>
+        <Text className="text-base font-sans text-muted-foreground mb-6">
           Your plan, body stats, and recent biomarkers
         </Text>
 
@@ -212,11 +239,19 @@ export default function ProfileScreen() {
                 <SkeletonText lines={2} />
               ) : (
                 <>
-                  <Text className="text-xl font-semibold text-text-base">{displayName}</Text>
+                  <Text className="text-xl font-semibold text-foreground">{displayName}</Text>
                   {email && (
-                    <Text className="text-sm text-muted mt-0.5" numberOfLines={1}>
-                      {email}
-                    </Text>
+                    <View className="flex-row items-center gap-2 mt-0.5">
+                      <Text
+                        className="text-sm text-muted-foreground flex-shrink"
+                        numberOfLines={1}
+                      >
+                        {email}
+                      </Text>
+                      {provider === 'google' && (
+                        <Badge variant="secondary">Google</Badge>
+                      )}
+                    </View>
                   )}
                 </>
               )}
@@ -226,28 +261,28 @@ export default function ProfileScreen() {
 
         {/* Plan */}
         <Card className="mb-4">
-          <Text className="text-lg font-semibold text-text-base mb-3">Your plan</Text>
+          <Text className="text-lg font-semibold text-foreground mb-3">Your plan</Text>
 
           {loading && !profile ? (
             <SkeletonText lines={3} />
           ) : profile ? (
             <View className="gap-4">
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-muted">Daily target</Text>
-                <Text className="text-base font-semibold text-text-base">
+                <Text className="text-sm text-muted-foreground">Daily target</Text>
+                <Text className="text-base font-semibold text-foreground">
                   {profile.daily_calorie_target} kcal
                 </Text>
               </View>
 
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-muted">Activity</Text>
+                <Text className="text-sm text-muted-foreground">Activity</Text>
                 <Badge variant="success">
                   {ACTIVITY_LABELS[profile.activity_level] ?? profile.activity_level}
                 </Badge>
               </View>
 
               <View>
-                <Text className="text-sm text-muted mb-2">Goals</Text>
+                <Text className="text-sm text-muted-foreground mb-2">Goals</Text>
                 {profile.goals?.length ? (
                   <View className="flex-row flex-wrap gap-2">
                     {profile.goals.map((g) => (
@@ -257,12 +292,12 @@ export default function ProfileScreen() {
                     ))}
                   </View>
                 ) : (
-                  <Text className="text-sm text-muted">None selected</Text>
+                  <Text className="text-sm text-muted-foreground">None selected</Text>
                 )}
               </View>
 
               <View>
-                <Text className="text-sm text-muted mb-2">Dietary restrictions</Text>
+                <Text className="text-sm text-muted-foreground mb-2">Dietary restrictions</Text>
                 {profile.dietary_restrictions?.length ? (
                   <View className="flex-row flex-wrap gap-2">
                     {profile.dietary_restrictions.map((r) => (
@@ -270,13 +305,13 @@ export default function ProfileScreen() {
                     ))}
                   </View>
                 ) : (
-                  <Text className="text-sm text-muted">None</Text>
+                  <Text className="text-sm text-muted-foreground">None</Text>
                 )}
               </View>
             </View>
           ) : (
             <View>
-              <Text className="text-sm text-muted mb-3">
+              <Text className="text-sm text-muted-foreground mb-3">
                 You haven&apos;t finished onboarding yet.
               </Text>
               <Button onPress={() => router.push('/onboarding/step1-goals')}>
@@ -289,12 +324,12 @@ export default function ProfileScreen() {
         {/* Body */}
         {profile && (
           <Card className="mb-4">
-            <Text className="text-lg font-semibold text-text-base mb-3">Body</Text>
+            <Text className="text-lg font-semibold text-foreground mb-3">Body</Text>
             <View>
               <ListItem
                 title="Age"
                 trailing={
-                  <Text className="text-sm text-text-base">
+                  <Text className="text-sm text-foreground">
                     {profile.age != null ? `${profile.age}` : '—'}
                   </Text>
                 }
@@ -302,7 +337,7 @@ export default function ProfileScreen() {
               <ListItem
                 title="Sex"
                 trailing={
-                  <Text className="text-sm text-text-base">
+                  <Text className="text-sm text-foreground">
                     {profile.sex ? SEX_LABELS[profile.sex] : '—'}
                   </Text>
                 }
@@ -310,7 +345,7 @@ export default function ProfileScreen() {
               <ListItem
                 title="Height"
                 trailing={
-                  <Text className="text-sm text-text-base">
+                  <Text className="text-sm text-foreground">
                     {profile.height_cm != null ? `${profile.height_cm} cm` : '—'}
                   </Text>
                 }
@@ -318,7 +353,7 @@ export default function ProfileScreen() {
               <ListItem
                 title="Weight"
                 trailing={
-                  <Text className="text-sm text-text-base">
+                  <Text className="text-sm text-foreground">
                     {profile.weight_kg != null ? `${profile.weight_kg} kg` : '—'}
                   </Text>
                 }
@@ -330,13 +365,26 @@ export default function ProfileScreen() {
 
         {/* Biomarkers */}
         <View className="mb-2 flex-row items-center justify-between">
-          <Text className="text-lg font-semibold text-text-base">Biomarkers</Text>
-          {biomarkers.length > 0 && (
-            <Text className="text-xs text-muted">
-              Updated {formatRecordedAt(biomarkers[0].recorded_at)}
-            </Text>
-          )}
+          <Text className="text-lg font-semibold text-foreground">Biomarkers</Text>
+          <View className="flex-row items-center gap-2">
+            {biomarkers.length > 0 && (
+              <Text className="text-xs text-muted-foreground">
+                Updated {formatRecordedAt(biomarkers[0].recorded_at)}
+              </Text>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => void handleSeedBiomarkers()}
+              loading={seeding}
+            >
+              {biomarkers.length === 0 ? 'Seed sample' : 'Reseed'}
+            </Button>
+          </View>
         </View>
+        {seedError ? (
+          <Text className="text-xs text-destructive mb-2">{seedError}</Text>
+        ) : null}
 
         {loading && biomarkers.length === 0 ? (
           <View className="flex-row flex-wrap gap-3 mb-4">
@@ -347,9 +395,9 @@ export default function ProfileScreen() {
           </View>
         ) : biomarkers.length === 0 ? (
           <Card className="mb-4">
-            <Text className="text-sm text-muted">
-              No biomarkers yet. Connect a wearable or log readings to start tracking glucose,
-              heart rate, sleep, and steps.
+            <Text className="text-sm text-muted-foreground">
+              No biomarkers yet. Tap &quot;Seed sample&quot; above to populate a
+              busy-pro week so the AI coach has context to reason about.
             </Text>
           </Card>
         ) : (
@@ -392,7 +440,7 @@ export default function ProfileScreen() {
             </View>
 
             <Card className="mb-4">
-              <Text className="text-sm font-semibold text-text-base mb-2">Recent entries</Text>
+              <Text className="text-sm font-semibold text-foreground mb-2">Recent entries</Text>
               <View>
                 {biomarkers.map((row, idx) => {
                   const parts: string[] = [];
@@ -424,7 +472,7 @@ export default function ProfileScreen() {
 
         {/* Settings */}
         <Card className="mb-4">
-          <Text className="text-lg font-semibold text-text-base mb-2">Settings</Text>
+          <Text className="text-lg font-semibold text-foreground mb-2">Settings</Text>
           <View>
             <ListItem
               title="Notifications"
@@ -455,7 +503,7 @@ export default function ProfileScreen() {
             <ListItem
               title="Edit profile"
               subtitle="Update goals, body, and activity"
-              trailing={<Text className="text-muted text-base">›</Text>}
+              trailing={<Text className="text-muted-foreground text-base">›</Text>}
               onPress={() => router.push('/onboarding/step1-goals')}
               className="border-b-0"
             />
@@ -463,15 +511,21 @@ export default function ProfileScreen() {
         </Card>
 
         {/* Sign out */}
-        <Button
-          variant="destructive"
-          onPress={handleSignOut}
-          loading={signingOut}
-          disabled={signingOut}
-          className="mt-2"
-        >
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </Button>
+        <View className="mt-2 mb-2">
+          <Button
+            variant="destructive"
+            size="lg"
+            onPress={handleSignOut}
+            loading={signingOut}
+            disabled={signingOut}
+            className="w-full rounded-2xl"
+          >
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </Button>
+          <Text className="text-xs text-muted-foreground text-center mt-2">
+            You can sign back in anytime with email or Google.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

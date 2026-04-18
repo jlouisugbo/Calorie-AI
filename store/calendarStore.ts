@@ -2,8 +2,11 @@ import { create } from 'zustand';
 import { fetchUpcomingEvents, type CalendarEvent } from '@/services/calendar';
 import { supabase } from '@/lib/supabase/client';
 
+const USE_FAKE = process.env.EXPO_PUBLIC_USE_FAKE_CALENDAR !== 'false';
+
 interface CalendarState {
   isConnected: boolean;
+  source: 'demo' | 'google' | 'none';
   events: CalendarEvent[];
   isLoading: boolean;
   error: string | null;
@@ -21,7 +24,8 @@ async function getCurrentUserId(): Promise<string | null> {
 }
 
 export const useCalendarStore = create<CalendarState>((set) => ({
-  isConnected: false,
+  isConnected: USE_FAKE,
+  source: USE_FAKE ? 'demo' : 'none',
   events: [],
   isLoading: false,
   error: null,
@@ -30,14 +34,22 @@ export const useCalendarStore = create<CalendarState>((set) => ({
 
   refresh: async () => {
     const userId = await getCurrentUserId();
-    if (!userId) {
+    if (!USE_FAKE && !userId) {
       set({ error: 'Sign in to load your calendar.', events: [] });
       return;
     }
     set({ isLoading: true, error: null });
     try {
-      const events = await fetchUpcomingEvents({ userId, hoursAhead: 24 });
-      set({ events, isLoading: false, isConnected: events.length >= 0 });
+      const result = await fetchUpcomingEvents({
+        userId: userId ?? null,
+        hoursAhead: 24,
+      });
+      set({
+        events: result.events,
+        source: result.source,
+        isLoading: false,
+        isConnected: true,
+      });
     } catch (err) {
       set({
         isLoading: false,

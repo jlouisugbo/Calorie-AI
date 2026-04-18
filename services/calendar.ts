@@ -12,14 +12,19 @@ export interface CalendarEvent {
   htmlLink: string | null;
 }
 
+export interface FetchUpcomingEventsResult {
+  events: CalendarEvent[];
+  source: 'demo' | 'google' | 'none';
+}
+
 function resolveBaseUrl(): string {
   if (ENV.API_BASE_URL) return ENV.API_BASE_URL.replace(/\/$/, '');
   if (Platform.OS === 'web') return '';
 
-  const legacyManifest = (Constants as unknown as {
+  const legacyManifest = Constants as unknown as {
     manifest?: { debuggerHost?: string };
     manifest2?: { extra?: { expoGo?: { debuggerHost?: string } } };
-  });
+  };
   const hostUri =
     Constants.expoConfig?.hostUri ??
     legacyManifest.manifest?.debuggerHost ??
@@ -49,19 +54,26 @@ export async function exchangeGoogleAuthCode(args: {
 }
 
 export async function fetchUpcomingEvents(args: {
-  userId: string;
+  userId: string | null;
   hoursAhead?: number;
   maxResults?: number;
-}): Promise<CalendarEvent[]> {
+}): Promise<FetchUpcomingEventsResult> {
   const url = `${resolveBaseUrl()}/api/calendar/events`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(args),
   });
-  const data = (await res.json()) as { events?: CalendarEvent[]; error?: string };
+  const data = (await res.json()) as {
+    events?: CalendarEvent[];
+    source?: 'demo' | 'google' | 'none';
+    error?: string;
+  };
   if (!res.ok) {
     throw new Error(data.error ?? `Calendar request failed (${res.status})`);
   }
-  return data.events ?? [];
+  return {
+    events: data.events ?? [],
+    source: data.source ?? 'none',
+  };
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { supabase } from '@/lib/supabase/client';
 import { getProfile } from '@/lib/supabase/profile';
+import { signInWithGoogle } from '@/services/auth';
 
 interface FormState {
   email: string;
@@ -30,6 +31,7 @@ export default function Login() {
   const [form, setForm] = useState<FormState>({ email: '', password: '' });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -74,6 +76,37 @@ export default function Login() {
       setErrors({ form: message });
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleGoogle() {
+    setGoogleLoading(true);
+    setErrors({});
+    try {
+      const result = await signInWithGoogle();
+      if (!result.ok) {
+        if (result.error && result.error !== 'Sign-in cancelled') {
+          setErrors({ form: result.error });
+        }
+        return;
+      }
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) {
+        setErrors({ form: 'Could not sign in. Please try again.' });
+        return;
+      }
+      const profile = await getProfile(userId);
+      if (profile) {
+        router.replace('/(tabs)/home');
+      } else {
+        router.replace('/onboarding/step1-goals');
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setErrors({ form: message });
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -152,11 +185,28 @@ export default function Login() {
           <Button
             size="lg"
             loading={submitting}
-            disabled={submitting}
+            disabled={submitting || googleLoading}
             className="w-full rounded-2xl"
             onPress={handleSubmit}
           >
             {submitting ? 'Signing in...' : 'Sign in'}
+          </Button>
+
+          <View className="my-4 flex-row items-center gap-3">
+            <View className="flex-1 h-px bg-border" />
+            <Text className="text-xs text-muted-foreground">or</Text>
+            <View className="flex-1 h-px bg-border" />
+          </View>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full rounded-2xl"
+            loading={googleLoading}
+            disabled={googleLoading || submitting}
+            onPress={handleGoogle}
+          >
+            Continue with Google
           </Button>
 
           <View className="flex-1" />

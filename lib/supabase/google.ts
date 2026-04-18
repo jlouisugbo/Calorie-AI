@@ -1,4 +1,4 @@
-import { getServiceSupabase } from './server';
+import { getServiceSupabase, requireServiceSupabase } from './server';
 
 export interface GoogleTokenRow {
   user_id: string;
@@ -12,6 +12,7 @@ export async function getGoogleTokens(
   userId: string,
 ): Promise<GoogleTokenRow | null> {
   const sb = getServiceSupabase();
+  if (!sb) return null;
   const { data, error } = await sb
     .from('google_tokens')
     .select('*')
@@ -25,7 +26,7 @@ export async function upsertGoogleTokens(
   userId: string,
   patch: Partial<Omit<GoogleTokenRow, 'user_id'>>,
 ): Promise<void> {
-  const sb = getServiceSupabase();
+  const sb = requireServiceSupabase();
   const { error } = await sb
     .from('google_tokens')
     .upsert({ user_id: userId, ...patch }, { onConflict: 'user_id' });

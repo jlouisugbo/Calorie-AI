@@ -3,6 +3,7 @@ import type { AgentContext } from './context';
 import { searchNearbyPlaces } from '@/lib/places/server';
 import { listUpcomingEvents } from '@/lib/google/calendar';
 import { getLatestBiomarkers } from '@/lib/supabase/biomarkers';
+import { getFakeCalendarEvents, shouldUseFakeCalendar } from './fake-calendar';
 
 export interface ToolDef<TInput = Record<string, unknown>> {
   name: string;
@@ -82,14 +83,18 @@ const getCalendarEvents: ToolDef<{ hoursAhead?: number; maxResults?: number }> =
     additionalProperties: false,
   },
   run: async (input, ctx) => {
+    const hoursAhead = input.hoursAhead ?? 24;
+    const maxResults = input.maxResults ?? 10;
+
+    if (shouldUseFakeCalendar()) {
+      const events = getFakeCalendarEvents(hoursAhead, maxResults);
+      return { events, source: 'demo' };
+    }
+
     if (!ctx.userId) return { events: [], reason: 'no user' };
     try {
-      const events = await listUpcomingEvents(
-        ctx.userId,
-        input.hoursAhead ?? 24,
-        input.maxResults ?? 10,
-      );
-      return { events };
+      const events = await listUpcomingEvents(ctx.userId, hoursAhead, maxResults);
+      return { events, source: 'google' };
     } catch (err) {
       return {
         events: [],

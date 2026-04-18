@@ -1,4 +1,4 @@
-import { getServiceSupabase } from './server';
+import { getServiceSupabase, requireServiceSupabase } from './server';
 
 export interface UserProfile {
   user_id: string;
@@ -12,6 +12,7 @@ export interface UserProfile {
 
 export async function getProfileServer(userId: string): Promise<UserProfile | null> {
   const sb = getServiceSupabase();
+  if (!sb) return null;
   const { data, error } = await sb
     .from('profiles')
     .select(
@@ -27,7 +28,7 @@ export async function upsertProfileServer(
   userId: string,
   patch: Partial<Omit<UserProfile, 'user_id'>>,
 ): Promise<void> {
-  const sb = getServiceSupabase();
+  const sb = requireServiceSupabase();
   const { error } = await sb
     .from('profiles')
     .upsert({ user_id: userId, ...patch }, { onConflict: 'user_id' });
