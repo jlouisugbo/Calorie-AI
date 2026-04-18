@@ -3,15 +3,24 @@ import { runAgentTurn } from '@/services/ai';
 import { useLocationStore } from '@/store/locationStore';
 import { supabase } from '@/lib/supabase/client';
 import type { Message, AnthropicMessage } from '@/types';
+import { getSystemPrompt, PromptMode } from '@/services/promptBuilder';
+import { getProfile } from '@/lib/supabase/profile';
+import type { Profile } from '@/lib/supabase/types';
 
 interface AIStore {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  /** Surface the most recent agent tool calls in the UI for transparency. */
+  mode: PromptMode;
+  systemPrompt: string;
+  profile: Profile | null;
+  mealLogs: any[];
   lastToolCalls: { name: string; isError: boolean }[];
+  
+  initializeData: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   clearMessages: () => void;
+  setMode: (mode: PromptMode) => void;
 }
 
 async function getCurrentUserId(): Promise<string | null> {
@@ -27,7 +36,33 @@ export const useAIStore = create<AIStore>((set, get) => ({
   messages: [],
   isLoading: false,
   error: null,
+  mode: 'coach',
+  systemPrompt: 'Loading context...',
+  profile: null,
+  mealLogs: [],
   lastToolCalls: [],
+
+  initializeData: async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const userId = session.user.id;
+      
+      const profile = await getProfile(userId);
+      const { data: logs } = await supabase
+        .from('meal_logs')
+        .select('*')
+        .eq('user_id', userId);
+
+      const mealLogs = logs || [];
+      const newPrompt = getSystemPrompt(get().mode, profile, mealLogs);
+
+      set({ profile, mealLogs, systemPrompt: newPrompt });
+    } catch (err) {
+      console.error('Error initializing AI store:', err);
+    }
+  },
 
   sendMessage: async (content: string) => {
     const userMessage: Message = {
@@ -44,11 +79,19 @@ export const useAIStore = create<AIStore>((set, get) => ({
     }));
 
     try {
-      const { messages } = get();
-      const apiMessages: AnthropicMessage[] = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      await get().initializeData();
+      
+      const { messages, systemPrompt } = get();
+      
+      // We pass the systemPrompt as the first message to the backend 
+      // so that it can pass it to the Claude API
+      const apiMessages: AnthropicMessage[] = [
+        { role: 'system' as any, content: systemPrompt },
+        ...messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }))
+      ];
 
       const coords = useLocationStore.getState().coords;
       const userId = await getCurrentUserId();
@@ -88,4 +131,9 @@ export const useAIStore = create<AIStore>((set, get) => ({
   },
 
   clearMessages: () => set({ messages: [], error: null, lastToolCalls: [] }),
+
+  setMode: (mode: PromptMode) => {
+    const state = get();
+    set({ mode, systemPrompt: getSystemPrompt(mode, state.profile, state.mealLogs) });
+  },
 }));
