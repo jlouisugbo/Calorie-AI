@@ -14,23 +14,39 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.baseplate.mobile"
+      "bundleIdentifier": "com.baseplate.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to personalize nearby food and restaurant recommendations while you're using the app."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.baseplate.mobile"
+      "package": "com.baseplate.mobile",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "server"
     },
     "scheme": "baseplate-mobile",
     "experiments": {
       "typedRoutes": true
     },
-    "plugins": ["expo-router", "expo-secure-store"]
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "We use your location to personalize nearby food and restaurant recommendations while you're using the app.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ]
+    ]
   }
 }
