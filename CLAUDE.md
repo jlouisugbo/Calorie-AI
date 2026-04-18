@@ -4,6 +4,22 @@
 
 **Thesis**: A personal nutrition coach that meets you where you are — not where meal-prep culture assumes you'll be.
 
+---
+
+# MANDATORY — REUSABLE UI (`components/ui/`) + FOREST THEME
+
+## **READ THIS ON EVERY UI TASK. DO NOT SKIP.**
+
+**You must reuse and extend shared primitives.** Before dropping raw `View`, `Text`, `TextInput`, or one-off styled wrappers on a screen, open **`components/ui/`** and use what already exists (`Button`, `Card`, `Input`, `Badge`, `Checkbox`, `Progress`, etc.). If something close exists, compose or extend it — do not duplicate the same pattern inline.
+
+**You must add new primitives to the right place.** If you are building UI with React Native and it is **largely reusable** (buttons, inputs, lists rows, modals, chips, toggles, layout shells — anything another screen could use), **create it as a reusable component in `components/ui/`**, not buried inside `app/` or a feature folder. Feature-specific composition (e.g. `RestaurantCard`, onboarding steps) still lives under **`components/[feature]/`**.
+
+**You must match the Forest template.** All new UI in **`components/ui/`** must use the **forest / cream / beige** system defined in **`global.css`**: semantic tokens (`bg-background`, `bg-primary`, `text-foreground`, `border-primary`, etc.) and the palette described in the **Colors** section of this file — **no one-off hex palettes** unless you are deliberately mapping them into `global.css` first.
+
+**Summary:** *Reuse `components/ui/` → promote new primitives there → theme everything from `global.css` (Forest).* **Ignoring this wastes review time and breaks visual consistency.**
+
+---
+
 ## Quick Start
 
 ```bash
@@ -274,6 +290,8 @@ GOOGLE_CALENDAR_CLIENT_SECRET=
 **Critical**: `GOOGLE_PLACES_API_KEY` and `LOGMEAL_API_KEY` must NOT have the `EXPO_PUBLIC_` prefix — they are used only in `app/api/` routes (server-side). Putting them in `EXPO_PUBLIC_` would expose them in the client bundle.
 
 **Build-time baked in**: Changing `.env` requires restarting `npx expo start`. For production, set in EAS secrets.
+
+
 
 ---
 
