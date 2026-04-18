@@ -12,16 +12,27 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.baseplate.mobile"
+      "bundleIdentifier": "com.baseplate.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to personalize nearby food and restaurant recommendations while you're using the app.",
+        "NSMicrophoneUsageDescription": "Used to record your voice when you talk to the AI nutrition coach.",
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.baseplate.mobile"
+      "package": "com.baseplate.mobile",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "server"
     },
     "scheme": "baseplate-mobile",
     "experiments": {
@@ -35,6 +46,26 @@
         {
           "cameraPermission": "Allow Calorie-AI to use your camera to scan meals.",
           "photosPermission": "Allow Calorie-AI to access your photos to analyze meal images."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "We use your location to personalize nearby food and restaurant recommendations while you're using the app.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Used to record your voice when you talk to the AI nutrition coach."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#4f46e5"
         }
       ]
     ]

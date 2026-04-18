@@ -4,6 +4,24 @@
 
 **Thesis**: A personal nutrition coach that meets you where you are — not where meal-prep culture assumes you'll be.
 
+---
+
+# MANDATORY — REUSABLE UI (`components/ui/`) + FOREST THEME
+
+## **READ THIS ON EVERY UI TASK. DO NOT SKIP.**
+
+**You must reuse and extend shared primitives.** Before dropping raw `View`, `Text`, `TextInput`, or one-off styled wrappers on a screen, open **`components/ui/`** and use what already exists (`Button`, `Card`, `Input`, `Badge`, `Checkbox`, `Progress`, etc.). If something close exists, compose or extend it — do not duplicate the same pattern inline.
+
+**You must add new primitives to the right place.** If you are building UI with React Native and it is **largely reusable** (buttons, inputs, lists rows, modals, chips, toggles, layout shells — anything another screen could use), **create it as a reusable component in `components/ui/`**, not buried inside `app/` or a feature folder. Feature-specific composition (e.g. `RestaurantCard`, onboarding steps) still lives under **`components/[feature]/`**.
+
+**You must match the Forest template.** All new UI in **`components/ui/`** must use the **forest / cream / beige** system defined in **`global.css`**: semantic tokens (`bg-background`, `bg-primary`, `text-foreground`, `border-primary`, etc.) and the palette described in the **Colors** section of this file — **no one-off hex palettes** unless you are deliberately mapping them into `global.css` first.
+
+**You must use NativeWind for styling**. We do not want any custom style sheets for everything. We want it all in NativeWind for styling purposes.
+
+**Summary:** *Reuse `components/ui/` → promote new primitives there → theme everything from `global.css` (Forest).* **Ignoring this wastes review time and breaks visual consistency.**
+
+---
+
 ## Quick Start
 
 ```bash
@@ -38,22 +56,23 @@ structure, and operator workflows, attach or open
 
 These four features must work for the demo. Everything else is cut unless all four are done.
 
-| # | Feature | Owner | Risk |
-|---|---------|-------|------|
-| 1 | **Onboarding** — 3-step flow: goals → dietary restrictions → activity level; saves to Supabase `profiles` | Joel | Low |
-| 2 | **AI Nutrition Coach** — Claude chat with system prompt built from user profile | Mani | Low |
-| 3 | **Active Mode** — "I'm near X, what should I eat?" → Google Places + Claude recommendations | Shared | Medium |
-| 4 | **Meal Logging** — photo → LogMeal API → calories/macros → saved to Supabase | Shared | Medium |
+| #   | Feature                                                                                                   | Owner  | Risk   |
+| --- | --------------------------------------------------------------------------------------------------------- | ------ | ------ |
+| 1   | **Onboarding** — 3-step flow: goals → dietary restrictions → activity level; saves to Supabase `profiles` | Joel   | Low    |
+| 2   | **AI Nutrition Coach** — Claude chat with system prompt built from user profile                           | Mani   | Low    |
+| 3   | **Active Mode** — "I'm near X, what should I eat?" → Google Places + Claude recommendations               | Shared | Medium |
+| 4   | **Meal Logging** — photo → LogMeal API → calories/macros → saved to Supabase                              | Shared | Medium |
 
 ### Nice-to-Haves (only if must-haves are done)
 
-| Feature | Owner | Risk | Notes |
-|---------|-------|------|-------|
-| Calendar sync | Tejiri | Medium | OAuth scope; reads upcoming events to suggest nearby lunch spots in advance |
-| Historical charts | — | Low | Pure UI over Supabase data; `charts/` components are already built |
-| Passive Mode | — | High | Real-time geofencing — skip for hackathon |
+| Feature           | Owner  | Risk   | Notes                                                                       |
+| ----------------- | ------ | ------ | --------------------------------------------------------------------------- |
+| Calendar sync     | Tejiri | Medium | OAuth scope; reads upcoming events to suggest nearby lunch spots in advance |
+| Historical charts | —      | Low    | Pure UI over Supabase data; `charts/` components are already built          |
+| Passive Mode      | —      | High   | Real-time geofencing — skip for hackathon                                   |
 
 ### Active Mode Fallback
+
 If Google Places API setup takes too long, have Claude generate recommendations from neighborhood + cuisine type in the prompt. Works fine for a demo.
 
 ---
@@ -70,6 +89,7 @@ If Google Places API setup takes too long, have Claude generate recommendations 
 ## Supabase Schema
 
 ### `profiles` table
+
 ```sql
 create table profiles (
   id uuid primary key default gen_random_uuid(),
@@ -86,6 +106,7 @@ create policy "Users manage own profile" on profiles
 ```
 
 ### `meal_logs` table
+
 ```sql
 create table meal_logs (
   id uuid primary key default gen_random_uuid(),
@@ -112,26 +133,26 @@ create policy "Users manage own logs" on meal_logs
 Every `.tsx` file in `app/` is automatically a route. No route registration needed.
 `+api.ts` suffix = an Expo API route (server-side handler, runs on the server).
 
-| File | Route | Owner | What it does |
-|------|-------|-------|--------------|
-| `app/_layout.tsx` | (root) | — | Root layout — fonts, providers, navigation shell |
-| `app/index.tsx` | `/` | — | Splash/redirect: profile complete → tabs, else → onboarding |
-| `app/(auth)/login.tsx` | `/login` | — | Login screen |
-| `app/(auth)/signup.tsx` | `/signup` | — | Signup screen |
-| `app/onboarding/_layout.tsx` | (layout) | Joel | Onboarding shell with step progress indicator |
-| `app/onboarding/step1-goals.tsx` | `/onboarding/step1-goals` | Joel | Pick nutrition goals (multi-select chips) |
-| `app/onboarding/step2-restrictions.tsx` | `/onboarding/step2-restrictions` | Joel | Pick dietary restrictions (multi-select chips) |
-| `app/onboarding/step3-activity.tsx` | `/onboarding/step3-activity` | Joel | Pick activity level + confirm calorie target → write to `profiles` |
-| `app/(tabs)/_layout.tsx` | (layout) | — | Tab bar: Home · Coach · Active · Log |
-| `app/(tabs)/home.tsx` | `/home` | — | Daily summary: calories remaining, macro rings |
-| `app/(tabs)/coach.tsx` | `/coach` | Mani | AI Nutrition Coach chat (fork of chat-interface) |
-| `app/(tabs)/active.tsx` | `/active` | Shared | Active Mode — location input + restaurant recs |
-| `app/(tabs)/log.tsx` | `/log` | Shared | Meal logging — camera → LogMeal → save |
-| `app/(tabs)/calendar.tsx` | `/calendar` | Tejiri | Calendar sync (nice-to-have) |
-| `app/api/nutrition-coach+api.ts` | `POST /api/nutrition-coach` | Mani | Streams Claude with profile-injected system prompt |
-| `app/api/active-mode+api.ts` | `POST /api/active-mode` | Shared | Google Places → Claude recommendation pipeline |
-| `app/api/log-meal+api.ts` | `POST /api/log-meal` | Shared | LogMeal API → parse macros → write to Supabase |
-| `app/api/calendar-events+api.ts` | `GET /api/calendar-events` | Tejiri | Google Calendar OAuth + event fetch (nice-to-have) |
+| File                                    | Route                            | Owner  | What it does                                                       |
+| --------------------------------------- | -------------------------------- | ------ | ------------------------------------------------------------------ |
+| `app/_layout.tsx`                       | (root)                           | —      | Root layout — fonts, providers, navigation shell                   |
+| `app/index.tsx`                         | `/`                              | —      | Splash/redirect: profile complete → tabs, else → onboarding        |
+| `app/(auth)/login.tsx`                  | `/login`                         | —      | Login screen                                                       |
+| `app/(auth)/signup.tsx`                 | `/signup`                        | —      | Signup screen                                                      |
+| `app/onboarding/_layout.tsx`            | (layout)                         | Joel   | Onboarding shell with step progress indicator                      |
+| `app/onboarding/step1-goals.tsx`        | `/onboarding/step1-goals`        | Joel   | Pick nutrition goals (multi-select chips)                          |
+| `app/onboarding/step2-restrictions.tsx` | `/onboarding/step2-restrictions` | Joel   | Pick dietary restrictions (multi-select chips)                     |
+| `app/onboarding/step3-activity.tsx`     | `/onboarding/step3-activity`     | Joel   | Pick activity level + confirm calorie target → write to `profiles` |
+| `app/(tabs)/_layout.tsx`                | (layout)                         | —      | Tab bar: Home · Coach · Active · Log                               |
+| `app/(tabs)/home.tsx`                   | `/home`                          | —      | Daily summary: calories remaining, macro rings                     |
+| `app/(tabs)/coach.tsx`                  | `/coach`                         | Mani   | AI Nutrition Coach chat (fork of chat-interface)                   |
+| `app/(tabs)/active.tsx`                 | `/active`                        | Shared | Active Mode — location input + restaurant recs                     |
+| `app/(tabs)/log.tsx`                    | `/log`                           | Shared | Meal logging — camera → LogMeal → save                             |
+| `app/(tabs)/calendar.tsx`               | `/calendar`                      | Tejiri | Calendar sync (nice-to-have)                                       |
+| `app/api/nutrition-coach+api.ts`        | `POST /api/nutrition-coach`      | Mani   | Streams Claude with profile-injected system prompt                 |
+| `app/api/active-mode+api.ts`            | `POST /api/active-mode`          | Shared | Google Places → Claude recommendation pipeline                     |
+| `app/api/log-meal+api.ts`               | `POST /api/log-meal`             | Shared | LogMeal API → parse macros → write to Supabase                     |
+| `app/api/calendar-events+api.ts`        | `GET /api/calendar-events`       | Tejiri | Google Calendar OAuth + event fetch (nice-to-have)                 |
 
 > **`(auth)` and `(protected)` are route groups** — the parentheses make them
 > invisible in the URL. They let you apply different layouts to different
@@ -159,30 +180,30 @@ Native — these components are built from scratch and fully customizable.
 
 #### `components/onboarding/` — Onboarding primitives (Joel)
 
-| File | What it does |
-|------|--------------|
-| `GoalChip.tsx` | Toggleable chip for goal/restriction selection — wraps `Chip.tsx` |
-| `StepProgress.tsx` | 3-dot step indicator shown in onboarding header |
+| File               | What it does                                                      |
+| ------------------ | ----------------------------------------------------------------- |
+| `GoalChip.tsx`     | Toggleable chip for goal/restriction selection — wraps `Chip.tsx` |
+| `StepProgress.tsx` | 3-dot step indicator shown in onboarding header                   |
 
 #### `components/nutrition-coach/` — AI Coach (Mani)
 
-| File | What it does |
-|------|--------------|
+| File                | What it does                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------ |
 | `NutritionChat.tsx` | **Fork of `chat-interface.tsx`** — injects profile system prompt. Never edit the original. |
 
 #### `components/active-mode/` — Active Mode UI
 
-| File | What it does |
-|------|--------------|
-| `LocationInput.tsx` | Text input + "Use my location" button via `expo-location` |
-| `RestaurantCard.tsx` | Restaurant name, cuisine, Claude's why-it-fits blurb |
+| File                 | What it does                                              |
+| -------------------- | --------------------------------------------------------- |
+| `LocationInput.tsx`  | Text input + "Use my location" button via `expo-location` |
+| `RestaurantCard.tsx` | Restaurant name, cuisine, Claude's why-it-fits blurb      |
 
 #### `components/meal-log/` — Meal Logging UI
 
-| File | What it does |
-|------|--------------|
+| File               | What it does                                               |
+| ------------------ | ---------------------------------------------------------- |
 | `PhotoCapture.tsx` | Camera button + `expo-image-picker` — returns base64 image |
-| `MacroSummary.tsx` | Shows cal/protein/carbs/fat after LogMeal returns |
+| `MacroSummary.tsx` | Shows cal/protein/carbs/fat after LogMeal returns          |
 
 #### `components/auth/`
 
@@ -216,19 +237,19 @@ Built on `react-native-reanimated`. Import shared presets from `lib/animations.t
 
 ### `lib/` — Shared Logic
 
-| File | What it does |
-|------|--------------|
-| `lib/anthropic.ts` | Anthropic client singleton. Exports `anthropic`, `DEFAULT_MODEL`, `DEFAULT_MAX_TOKENS`. |
-| `lib/supabase/client.ts` | Supabase client — AsyncStorage-backed session. Use in components and hooks. |
-| `lib/supabase/types.ts` | TypeScript types for DB schema. Regenerate after schema changes. |
-| `lib/supabase/profile.ts` | `getProfile(userId)`, `upsertProfile(userId, data)` — wraps `profiles` table. |
-| `lib/supabase/meals.ts` | `logMeal(userId, meal)`, `getTodaysMeals(userId)` — wraps `meal_logs` table. |
-| `lib/store.ts` | Zustand for UI-only state (onboarding step, active mode query). No server data here. |
-| `lib/auth/current-user.ts` | `getCurrentUser()` (returns `User \| null`) and `requireUser()` (redirects to `/login`). |
-| `lib/animations.ts` | Reanimated presets — `fadeUp`, `fadeIn`, `scaleIn`, `popIn`. |
-| `lib/places.ts` | Google Places wrapper — `searchNearby(lat, lon, query)` → top 5 places with name/address/cuisine. |
-| `lib/logmeal.ts` | LogMeal wrapper — `analyzeImage(base64)` → `{ calories, protein_g, carbs_g, fat_g, description }`. |
-| `lib/profile-prompt.ts` | `buildSystemPrompt(profile)` — converts profile → Claude system prompt. **Server-side only.** |
+| File                       | What it does                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| `lib/anthropic.ts`         | Anthropic client singleton. Exports `anthropic`, `DEFAULT_MODEL`, `DEFAULT_MAX_TOKENS`.            |
+| `lib/supabase/client.ts`   | Supabase client — AsyncStorage-backed session. Use in components and hooks.                        |
+| `lib/supabase/types.ts`    | TypeScript types for DB schema. Regenerate after schema changes.                                   |
+| `lib/supabase/profile.ts`  | `getProfile(userId)`, `upsertProfile(userId, data)` — wraps `profiles` table.                      |
+| `lib/supabase/meals.ts`    | `logMeal(userId, meal)`, `getTodaysMeals(userId)` — wraps `meal_logs` table.                       |
+| `lib/store.ts`             | Zustand for UI-only state (onboarding step, active mode query). No server data here.               |
+| `lib/auth/current-user.ts` | `getCurrentUser()` (returns `User \| null`) and `requireUser()` (redirects to `/login`).           |
+| `lib/animations.ts`        | Reanimated presets — `fadeUp`, `fadeIn`, `scaleIn`, `popIn`.                                       |
+| `lib/places.ts`            | Google Places wrapper — `searchNearby(lat, lon, query)` → top 5 places with name/address/cuisine.  |
+| `lib/logmeal.ts`           | LogMeal wrapper — `analyzeImage(base64)` → `{ calories, protein_g, carbs_g, fat_g, description }`. |
+| `lib/profile-prompt.ts`    | `buildSystemPrompt(profile)` — converts profile → Claude system prompt. **Server-side only.**      |
 
 ---
 
@@ -271,6 +292,8 @@ GOOGLE_CALENDAR_CLIENT_SECRET=
 **Critical**: `GOOGLE_PLACES_API_KEY` and `LOGMEAL_API_KEY` must NOT have the `EXPO_PUBLIC_` prefix — they are used only in `app/api/` routes (server-side). Putting them in `EXPO_PUBLIC_` would expose them in the client bundle.
 
 **Build-time baked in**: Changing `.env` requires restarting `npx expo start`. For production, set in EAS secrets.
+
+
 
 ---
 
@@ -344,11 +367,29 @@ Photo (base64 JPEG)
 
 ## Colors
 
-- **Semantic tokens** for UI: `bg-background`, `text-foreground`, `text-muted-foreground`, `bg-primary`, `bg-destructive`, etc. These respect dark mode automatically.
-- **Palette vars** for custom styling: `var(--color-indigo-500)`, `var(--color-blue-300)`, `var(--color-purple-700)`, etc.
-- Full rainbow palette: `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `indigo`, `violet`, `purple` — each with steps `100`–`900`
-- Neutrals: `--color-gray-50` through `--color-gray-950`
-- All defined in `global.css`; dark mode overrides semantic tokens automatically via `@media (prefers-color-scheme: dark)`
+**Theme**: Forest / nature — cream backgrounds, beige surfaces, deep greens as primary.
+
+### Semantic tokens (use these in components)
+
+| Token                | Light                | Dark                 | Tailwind class               |
+| -------------------- | -------------------- | -------------------- | ---------------------------- |
+| `--color-primary`    | forest-500 `#3c6e21` | forest-300 `#7bae56` | `bg-primary`, `text-primary` |
+| `--color-background` | cream-100 `#f9f4e8`  | `#101610`            | `bg-background`              |
+| `--color-surface`    | beige-100 `#f4edd9`  | `#192019`            | `bg-surface`                 |
+| `--color-muted`      | beige-200 `#e9dbbe`  | `#202b1f`            | `bg-muted`, `text-muted`     |
+
+### Forest palette (for direct use via `var()`)
+
+- **Cream**: `--color-cream-50` → `--color-cream-500` (off-white to warm tan)
+- **Beige**: `--color-beige-50` → `--color-beige-500` (light parchment to earthy tan)
+- **Forest**: `--color-forest-50` → `--color-forest-900` (pale sage to near-black)
+- **Olive**: `--color-olive-100` → `--color-olive-600` (pale olive to dark olive)
+
+### Standard palette (via Tailwind classes)
+
+`red`, `orange`, `yellow`, `green`, `teal`, `blue`, `indigo`, `violet`, `purple` — each with steps `100`–`900`
+Neutrals: `--color-gray-50` through `--color-gray-950`
+All defined in `global.css`; dark mode overrides semantic tokens automatically via `@media (prefers-color-scheme: dark)`
 
 ---
 

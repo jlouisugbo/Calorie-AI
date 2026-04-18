@@ -13,6 +13,8 @@ import { Syne_700Bold, Syne_800ExtraBold } from '@expo-google-fonts/syne';
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 import { View, Text } from 'react-native';
 import { ToastContainer } from '@/components/ui/Toast';
+import { LocationBootstrap } from '@/components/location/LocationBootstrap';
+import { NotificationBootstrap } from '@/components/notifications/NotificationBootstrap';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -36,6 +38,8 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
+      <LocationBootstrap />
+      <NotificationBootstrap />
       <Stack screenOptions={{ headerShown: false }} />
       <ToastContainer />
     </SafeAreaProvider>
