@@ -1,0 +1,24 @@
+[
+  {
+    "id": "ml-1234",
+    "user_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "description": "Starbucks Egg White & Roasted Red Pepper Sous Vide Bites",
+    "photo_url": "https://example.com/egg-bites.jpg",
+    "calories": 170,
+    "protein_g": 13,
+    "carbs_g": 13,
+    "fat_g": 7,
+    "logged_at": "2026-04-18T08:30:00Z"
+  },
+  {
+    "id": "ml-5678",
+    "user_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "description": "Chicken Caesar Salad (No croutons)",
+    "photo_url": "https://example.com/salad.jpg",
+    "calories": 450,
+    "protein_g": 35,
+    "carbs_g": 10,
+    "fat_g": 25,
+    "logged_at": "2026-04-18T12:15:00Z"
+  }
+]

@@ -2,13 +2,18 @@ import { create } from 'zustand';
 import { sendChatMessage } from '@/services/ai';
 import type { Message, AnthropicMessage } from '@/types';
 
+import { getSystemPrompt, PromptMode } from '@/services/promptBuilder';
+import mockMealLogs from '@/constants/mockMealLogs.json';
+
 interface AIStore {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
+  mode: PromptMode;
   systemPrompt: string;
   sendMessage: (content: string) => Promise<void>;
   clearMessages: () => void;
+  setMode: (mode: PromptMode) => void;
   setSystemPrompt: (prompt: string) => void;
 }
 
@@ -16,8 +21,8 @@ export const useAIStore = create<AIStore>((set, get) => ({
   messages: [],
   isLoading: false,
   error: null,
-  systemPrompt: 'You are a helpful AI assistant.',
-
+  mode: 'coach',
+  systemPrompt: getSystemPrompt('coach', mockMealLogs),
   sendMessage: async (content: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -61,6 +66,8 @@ export const useAIStore = create<AIStore>((set, get) => ({
   },
 
   clearMessages: () => set({ messages: [], error: null }),
+
+  setMode: (mode: PromptMode) => set({ mode, systemPrompt: getSystemPrompt(mode, mockMealLogs) }),
 
   setSystemPrompt: (prompt: string) => set({ systemPrompt: prompt }),
 }));
