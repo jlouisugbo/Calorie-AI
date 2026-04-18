@@ -1,7 +1,7 @@
 ---
 name: kotlin-reviewer
 description: Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practices, clean architecture violations, and common Android pitfalls.
-tools: ["Read", "Grep", "Glob", "Bash"]
+tools: ['Read', 'Grep', 'Glob', 'Bash']
 model: sonnet
 ---
 
@@ -24,6 +24,7 @@ Run `git diff --staged` and `git diff` to see changes. If no diff, check `git lo
 ### Step 2: Understand Project Structure
 
 Check for:
+
 - `build.gradle.kts` or `settings.gradle.kts` to understand module layout
 - `CLAUDE.md` for project-specific conventions
 - Whether this is Android-only, KMP, or Compose Multiplatform
@@ -31,6 +32,7 @@ Check for:
 ### Step 2b: Security Review
 
 Apply the Kotlin/Android security guidance before continuing:
+
 - exported Android components, deep links, and intent filters
 - insecure crypto, WebView, and network configuration usage
 - keystore, token, and credential handling

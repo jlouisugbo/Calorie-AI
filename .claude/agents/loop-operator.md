@@ -1,7 +1,7 @@
 ---
 name: loop-operator
 description: Operate autonomous agent loops, monitor progress, and intervene safely when loops stall.
-tools: ["Read", "Grep", "Glob", "Bash", "Edit"]
+tools: ['Read', 'Grep', 'Glob', 'Bash', 'Edit']
 model: sonnet
 color: orange
 ---
@@ -30,6 +30,7 @@ Run autonomous loops safely with clear stop conditions, observability, and recov
 ## Escalation
 
 Escalate when any condition is true:
+
 - no progress across two consecutive checkpoints
 - repeated failures with identical stack traces
 - cost drift outside budget window

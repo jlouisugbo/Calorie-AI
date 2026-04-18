@@ -56,6 +56,7 @@ You enforce baseplate-web conventions. When given files to review, check each ca
 ## Output Format
 
 Report as:
+
 - **VIOLATION** [file:line] — what's wrong → what it should be
 - **OK** — if the file is clean
 
