@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useAIStore } from '@/store/aiStore';
+import { NouriAvatar } from '@/components/ui/NouriAvatar';
 
 export function NouriChat({ onClose }: { onClose: () => void }) {
   const [input, setInput] = useState('');
@@ -27,8 +28,8 @@ export function NouriChat({ onClose }: { onClose: () => void }) {
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100">
         <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-full bg-teal-50 items-center justify-center">
-            <Text className="text-teal-600 text-lg">👤</Text>
+          <View className="w-10 h-10 rounded-full bg-cream-100 items-center justify-center overflow-hidden">
+            <NouriAvatar size={36} />
           </View>
           <View>
             <Text className="text-lg font-bold text-gray-900">Nouri</Text>
