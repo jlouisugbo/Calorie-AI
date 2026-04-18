@@ -1,0 +1,110 @@
+================================================================================
+FILES CREATED OR SUBSTANTIALLY EXTENDED FOR THE LOGMEAL / MEAL_LOG SCRIPT TASK
+================================================================================
+
+All task-specific files live under tools/logmeal/:
+
+1. tools/logmeal/logmeal-dev-smoke.ts
+     - Dev-only pipeline: load .env, compress if >1 MiB (sharp), POST segmentation,
+       POST nutritionalInfo, optional --emit-sql for public.meal_logs INSERT.
+
+2. tools/logmeal/meal-log-map.ts
+     - Maps LogMeal nutritionalInfo JSON → meal_logs columns; escapes SQL;
+       mealLogInsertSql() for local testing / migrations.
+
+3. tools/logmeal/emit-meal-log-from-logmeal-json.ts
+     - Reads saved nutritionalInfo JSON from disk; prints INSERT for meal_logs.
+
+4. tools/logmeal/AGENT_BRIEF_EXPO_LOGMEAL_MEAL_LOGS.txt
+     - This brief.
+
+Modified project file:
+  - package.json — scripts "logmeal:smoke", "logmeal:smoke:sql"; devDependency sharp
+
+For production API routes, import mapping from this folder, e.g.:
+  import { mealLogFieldsFromLogMealNutrition } from '../tools/logmeal/meal-log-map';
+  (adjust relative path from the file that imports it.)
+
+================================================================================
+AGENT BRIEF: EXPO CAMERA → LOGMEAL IDENTIFICATION → SUPABASE meal_logs
+================================================================================
+
+Goal
+----
+Implement meal logging in the Expo app: user captures or picks a meal photo,
+the backend identifies food and macros via LogMeal, then persists a row in
+public.meal_logs (description, photo_url, calories, protein_g, carbs_g, fat_g,
+logged_at, user_id).
+
+Do not put LogMeal credentials in the client bundle. Use a server-side route
+(Expo API route or backend) with LOGMEAL_API_KEY (or per-user APIUser tokens if
+your product model requires it).
+
+Identification pipeline (LogMeal)
+---------------------------------
+1) Food / dish identification (image → candidates + imageId)
+   - POST https://api.logmeal.com/v2/image/segmentation/complete
+   - Authorization: Bearer <APIUser token> (NOT the APICompany account token)
+   - Content-Type: multipart/form-data with a single part named exactly "image"
+     (binary file; JPEG recommended; max size 1,048,576 bytes — compress/resize
+     before upload if needed).
+
+2) Nutrition for that recognition
+   - POST https://api.logmeal.com/v2/nutrition/recipe/nutritionalInfo
+   - Authorization: same APIUser Bearer token
+   - Body: JSON { "imageId": <number> } (optional ?language=eng)
+   - Response includes foodName, nutritional_info.calories, and
+     nutritional_info.totalNutrients (labels vary; map carefully).
+
+If Bearer token is APICompany instead of APIUser, segmentation returns 401 with
+code 802. Create/use APIUser tokens from the LogMeal dashboard (Users).
+
+Reference implementation in this repo
+-------------------------------------
+- tools/logmeal/logmeal-dev-smoke.ts — full HTTP sequence + compression + optional SQL.
+- tools/logmeal/meal-log-map.ts — reuse mealLogFieldsFromLogMealNutrition() or the
+  same field mapping in your API route before inserting into Supabase.
+
+Suggested mobile + server architecture
+--------------------------------------
+Client (Expo):
+  - Use expo-image-picker (launchCameraAsync / launchImageLibraryAsync) or expo-camera for a custom capture UI.
+  - Resize/compress the image on device (or let the API enforce <1 MiB) to avoid
+    LogMeal 413 / code 715.
+  - Send the image to YOUR API only: e.g. multipart file, or base64 JSON if
+    you prefer (decode on server, then multipart to LogMeal).
+
+Server (Expo Router app/api/... or external backend):
+  - Validate authenticated user (Supabase session/JWT).
+  - Optional: upload original or compressed image to Supabase Storage; set
+    meal_logs.photo_url to the public/signed URL.
+  - Call LogMeal steps (1) and (2) with server-held APIUser token(s).
+  - Map nutritionalInfo → columns using shared logic (see tools/logmeal/meal-log-map.ts).
+  - Insert into public.meal_logs with user_id = auth user uuid (service role or
+    RLS-safe insert per your CLAUDE.md / project rules).
+
+Database (public.meal_logs)
+----------------------------
+Columns: id (uuid), user_id (uuid FK auth.users), description (text),
+photo_url (text), calories (int4), protein_g, carbs_g, fat_g (numeric),
+logged_at (timestamptz).
+
+Security checklist
+------------------
+- LOGMEAL_API_KEY: server-only; never EXPO_PUBLIC_*.
+- Never expose raw profile or tokens in client logs.
+- Confirm RLS policies allow users to insert/read only their rows.
+
+Local verification
+------------------
+From repo root (APIUser token in .env as LOGMEAL_API_KEY or logmeal_api_key):
+  npm run logmeal:smoke
+  npm run logmeal:smoke:sql
+
+Save nutrition JSON and generate SQL without re-calling LogMeal:
+  npx tsx tools/logmeal/emit-meal-log-from-logmeal-json.ts ./nutrition.json
+
+Optional env for generated SQL placeholder:
+  MEAL_LOG_USER_UUID=<supabase auth user uuid>
+
+End of brief.

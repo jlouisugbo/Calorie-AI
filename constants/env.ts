@@ -1,5 +1,6 @@
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const LOGMEAL_API_KEY = process.env.EXPO_PUBLIC_LOGMEAL_API_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error(
@@ -7,10 +8,17 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   );
 }
 
+if (!LOGMEAL_API_KEY) {
+  throw new Error(
+    'Missing EXPO_PUBLIC_LOGMEAL_API_KEY — copy .env.example to .env and fill it in.'
+  );
+}
+
 export const ENV = {
   API_BASE_URL: process.env.EXPO_PUBLIC_API_URL ?? '',
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
+  LOGMEAL_API_KEY,
 } as const;
 
 function required(value: string | undefined, name: string): string {
