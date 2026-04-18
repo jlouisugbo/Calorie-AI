@@ -9,7 +9,14 @@ interface ListItemProps {
   className?: string;
 }
 
-export function ListItem({ title, subtitle, leading, trailing, onPress, className = '' }: ListItemProps) {
+export function ListItem({
+  title,
+  subtitle,
+  leading,
+  trailing,
+  onPress,
+  className = '',
+}: ListItemProps) {
   const inner = (
     <>
       {leading && <View className="mr-3">{leading}</View>}

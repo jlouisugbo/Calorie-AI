@@ -1,4 +1,10 @@
-import { Modal as RNModal, View, Text, TouchableOpacity, type ModalProps as RNModalProps } from 'react-native';
+import {
+  Modal as RNModal,
+  View,
+  Text,
+  TouchableOpacity,
+  type ModalProps as RNModalProps,
+} from 'react-native';
 
 interface ModalProps {
   visible: boolean;
@@ -42,15 +48,11 @@ export function Modal({ visible, onClose, title, children, className = '' }: Mod
 }
 
 export function ModalHeader({ children, className = '' }: ModalSectionProps) {
-  return (
-    <View className={`mb-4 ${className}`}>{children}</View>
-  );
+  return <View className={`mb-4 ${className}`}>{children}</View>;
 }
 
 export function ModalBody({ children, className = '' }: ModalSectionProps) {
-  return (
-    <View className={`${className}`}>{children}</View>
-  );
+  return <View className={`${className}`}>{children}</View>;
 }
 
 export function ModalFooter({ children, className = '' }: ModalSectionProps) {

@@ -27,8 +27,7 @@ export const useToastStore = create<ToastStore>((set) => ({
     }, duration);
   },
 
-  dismiss: (id) =>
-    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  dismiss: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
   dismissAll: () => set({ toasts: [] }),
 }));
@@ -36,10 +35,8 @@ export const useToastStore = create<ToastStore>((set) => ({
 export const toast = {
   success: (msg: string, duration?: number) =>
     useToastStore.getState().show(msg, 'success', duration),
-  error: (msg: string, duration?: number) =>
-    useToastStore.getState().show(msg, 'error', duration),
-  info: (msg: string, duration?: number) =>
-    useToastStore.getState().show(msg, 'info', duration),
+  error: (msg: string, duration?: number) => useToastStore.getState().show(msg, 'error', duration),
+  info: (msg: string, duration?: number) => useToastStore.getState().show(msg, 'info', duration),
   warning: (msg: string, duration?: number) =>
     useToastStore.getState().show(msg, 'warning', duration),
 };

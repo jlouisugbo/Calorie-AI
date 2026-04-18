@@ -31,9 +31,7 @@ export function AppBarChart({
 
   return (
     <View className={className}>
-      {title ? (
-        <Text className="text-sm font-semibold text-text-base mb-2">{title}</Text>
-      ) : null}
+      {title ? <Text className="text-sm font-semibold text-text-base mb-2">{title}</Text> : null}
       <BarChart
         data={processedData}
         barBorderRadius={barBorderRadius}

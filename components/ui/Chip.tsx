@@ -21,15 +21,9 @@ export function Chip({
 }: ChipProps) {
   const baseClasses = 'flex-row items-center rounded-full px-3 py-1.5';
 
-  const colorClasses =
-    selected || variant === 'primary'
-      ? 'bg-primary'
-      : 'bg-gray-100';
+  const colorClasses = selected || variant === 'primary' ? 'bg-primary' : 'bg-gray-100';
 
-  const textColorClasses =
-    selected || variant === 'primary'
-      ? 'text-white'
-      : 'text-gray-700';
+  const textColorClasses = selected || variant === 'primary' ? 'text-white' : 'text-gray-700';
 
   const content = (
     <>
@@ -54,9 +48,5 @@ export function Chip({
     );
   }
 
-  return (
-    <View className={`${baseClasses} ${colorClasses} ${className}`}>
-      {content}
-    </View>
-  );
+  return <View className={`${baseClasses} ${colorClasses} ${className}`}>{content}</View>;
 }

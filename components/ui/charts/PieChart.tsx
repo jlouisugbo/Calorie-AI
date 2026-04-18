@@ -37,17 +37,13 @@ export function AppPieChart({
     donut && centerLabel ? (
       <View className="items-center justify-center">
         <Text className="text-sm font-semibold text-text-base">{centerLabel}</Text>
-        {centerSubLabel ? (
-          <Text className="text-xs text-gray-400">{centerSubLabel}</Text>
-        ) : null}
+        {centerSubLabel ? <Text className="text-xs text-gray-400">{centerSubLabel}</Text> : null}
       </View>
     ) : undefined;
 
   return (
     <View className={className}>
-      {title ? (
-        <Text className="text-sm font-semibold text-text-base mb-2">{title}</Text>
-      ) : null}
+      {title ? <Text className="text-sm font-semibold text-text-base mb-2">{title}</Text> : null}
       <View className="items-center">
         <PieChart
           data={data}

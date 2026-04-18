@@ -43,10 +43,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <View
-      className="absolute top-14 left-4 right-4 z-50"
-      pointerEvents="box-none"
-    >
+    <View className="absolute top-14 left-4 right-4 z-50" pointerEvents="box-none">
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} />
       ))}

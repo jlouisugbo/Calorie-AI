@@ -46,11 +46,7 @@ export function Sheet({
 
   return (
     <Modal transparent visible={visible} onRequestClose={onClose} animationType="none">
-      <TouchableOpacity
-        className="flex-1 bg-black/40"
-        activeOpacity={1}
-        onPress={onClose}
-      />
+      <TouchableOpacity className="flex-1 bg-black/40" activeOpacity={1} onPress={onClose} />
       <Animated.View
         style={[
           {

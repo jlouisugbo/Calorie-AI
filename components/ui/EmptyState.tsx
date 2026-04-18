@@ -14,9 +14,7 @@ export function EmptyState({ icon, title, description, action, className = '' }:
     <View className={`flex-1 items-center justify-center px-8 py-12 ${className}`}>
       {icon && <View className="mb-4">{icon}</View>}
       <Text className="text-lg font-semibold text-text-base text-center">{title}</Text>
-      {description && (
-        <Text className="text-sm text-muted mt-1 text-center">{description}</Text>
-      )}
+      {description && <Text className="text-sm text-muted mt-1 text-center">{description}</Text>}
       {action && (
         <Button onPress={action.onPress} className="mt-6">
           {action.label}

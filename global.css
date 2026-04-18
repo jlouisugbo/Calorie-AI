@@ -153,7 +153,7 @@
     --color-pink-900: #831843;
 
     /* ── Gray / Neutrals ─────────────────────────────────────── */
-    --color-gray-50:  #f9fafb;
+    --color-gray-50: #f9fafb;
     --color-gray-100: #f3f4f6;
     --color-gray-200: #e5e7eb;
     --color-gray-300: #d1d5db;
@@ -164,8 +164,8 @@
     --color-gray-800: #1f2937;
     --color-gray-900: #111827;
     --color-gray-950: #030712;
-    --color-white:    #ffffff;
-    --color-black:    #000000;
+    --color-white: #ffffff;
+    --color-black: #000000;
 
     /* ── Font variables (set by useFonts in _layout.tsx) ────── */
     /* --font-sans        → Plus Jakarta Sans 400  body / default  */
@@ -175,60 +175,60 @@
     /* --font-display     → Syne 700               screen titles   */
     /* --font-display-xl  → Syne 800               hero text       */
     /* --font-mono        → JetBrains Mono 400     AI output/code  */
-    --font-sans:        PlusJakartaSans_400Regular;
-    --font-medium:      PlusJakartaSans_500Medium;
-    --font-semibold:    PlusJakartaSans_600SemiBold;
-    --font-body-bold:   PlusJakartaSans_700Bold;
-    --font-display:     Syne_700Bold;
-    --font-display-xl:  Syne_800ExtraBold;
-    --font-mono:        JetBrainsMono_400Regular;
+    --font-sans: PlusJakartaSans_400Regular;
+    --font-medium: PlusJakartaSans_500Medium;
+    --font-semibold: PlusJakartaSans_600SemiBold;
+    --font-body-bold: PlusJakartaSans_700Bold;
+    --font-display: Syne_700Bold;
+    --font-display-xl: Syne_800ExtraBold;
+    --font-mono: JetBrainsMono_400Regular;
 
     /* ── Semantic tokens (light mode) ───────────────────────── */
-    --color-primary:            var(--color-indigo-600);
+    --color-primary: var(--color-indigo-600);
     --color-primary-foreground: var(--color-white);
-    --color-background:         var(--color-white);
-    --color-foreground:         var(--color-gray-900);
-    --color-card:               var(--color-white);
-    --color-card-foreground:    var(--color-gray-900);
-    --color-surface:            var(--color-gray-50);
-    --color-surface-elevated:   var(--color-white);
-    --color-muted:              var(--color-gray-100);
-    --color-muted-foreground:   var(--color-gray-500);
-    --color-accent:             var(--color-gray-100);
-    --color-accent-foreground:  var(--color-gray-900);
-    --color-border:             var(--color-gray-200);
-    --color-input:              var(--color-gray-200);
-    --color-ring:               var(--color-gray-400);
-    --color-destructive:        var(--color-red-600);
-    --color-success:            var(--color-green-600);
-    --color-warning:            var(--color-yellow-500);
+    --color-background: var(--color-white);
+    --color-foreground: var(--color-gray-900);
+    --color-card: var(--color-white);
+    --color-card-foreground: var(--color-gray-900);
+    --color-surface: var(--color-gray-50);
+    --color-surface-elevated: var(--color-white);
+    --color-muted: var(--color-gray-100);
+    --color-muted-foreground: var(--color-gray-500);
+    --color-accent: var(--color-gray-100);
+    --color-accent-foreground: var(--color-gray-900);
+    --color-border: var(--color-gray-200);
+    --color-input: var(--color-gray-200);
+    --color-ring: var(--color-gray-400);
+    --color-destructive: var(--color-red-600);
+    --color-success: var(--color-green-600);
+    --color-warning: var(--color-yellow-500);
 
     /* ── Chart tokens ────────────────────────────────────────── */
-    --color-chart-1: var(--color-amber-500);   /* amber  */
-    --color-chart-2: var(--color-teal-500);    /* teal   */
-    --color-chart-3: var(--color-blue-700);    /* blue   */
-    --color-chart-4: var(--color-lime-500);    /* lime   */
-    --color-chart-5: var(--color-yellow-500);  /* yellow */
+    --color-chart-1: var(--color-amber-500); /* amber  */
+    --color-chart-2: var(--color-teal-500); /* teal   */
+    --color-chart-3: var(--color-blue-700); /* blue   */
+    --color-chart-4: var(--color-lime-500); /* lime   */
+    --color-chart-5: var(--color-yellow-500); /* yellow */
 
     /* ── Radius scale (px — NativeWind resolves at build time) ── */
-    --radius-xs:   4px;
-    --radius-sm:   6px;
-    --radius-md:   8px;
-    --radius-lg:   12px;
-    --radius-xl:   16px;
-    --radius-2xl:  24px;
-    --radius-3xl:  32px;
-    --radius-4xl:  40px;
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-3xl: 32px;
+    --radius-4xl: 40px;
     --radius-full: 9999px;
 
     /* ── Spacing scale ───────────────────────────────────────── */
-    --space-1:  4px;
-    --space-2:  8px;
-    --space-3:  12px;
-    --space-4:  16px;
-    --space-5:  20px;
-    --space-6:  24px;
-    --space-8:  32px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
     --space-10: 40px;
     --space-12: 48px;
     --space-16: 64px;
@@ -236,35 +236,35 @@
     /* ── Shadows ─────────────────────────────────────────────── */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.10);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 
     /* ── Animation durations ─────────────────────────────────── */
-    --duration-fast:   150ms;
+    --duration-fast: 150ms;
     --duration-normal: 300ms;
-    --duration-slow:   500ms;
+    --duration-slow: 500ms;
   }
 
   /* ── Dark mode semantic overrides ───────────────────────── */
   @media (prefers-color-scheme: dark) {
     :root {
-      --color-primary:            var(--color-indigo-400);
+      --color-primary: var(--color-indigo-400);
       --color-primary-foreground: var(--color-gray-950);
-      --color-background:         var(--color-gray-950);
-      --color-foreground:         var(--color-gray-50);
-      --color-card:               var(--color-gray-900);
-      --color-card-foreground:    var(--color-gray-50);
-      --color-surface:            var(--color-gray-900);
-      --color-surface-elevated:   var(--color-gray-800);
-      --color-muted:              var(--color-gray-800);
-      --color-muted-foreground:   var(--color-gray-400);
-      --color-accent:             var(--color-gray-800);
-      --color-accent-foreground:  var(--color-gray-50);
-      --color-border:             var(--color-gray-700);
-      --color-input:              var(--color-gray-700);
-      --color-ring:               var(--color-gray-600);
-      --color-destructive:        var(--color-red-400);
-      --color-success:            var(--color-green-400);
-      --color-warning:            var(--color-yellow-400);
+      --color-background: var(--color-gray-950);
+      --color-foreground: var(--color-gray-50);
+      --color-card: var(--color-gray-900);
+      --color-card-foreground: var(--color-gray-50);
+      --color-surface: var(--color-gray-900);
+      --color-surface-elevated: var(--color-gray-800);
+      --color-muted: var(--color-gray-800);
+      --color-muted-foreground: var(--color-gray-400);
+      --color-accent: var(--color-gray-800);
+      --color-accent-foreground: var(--color-gray-50);
+      --color-border: var(--color-gray-700);
+      --color-input: var(--color-gray-700);
+      --color-ring: var(--color-gray-600);
+      --color-destructive: var(--color-red-400);
+      --color-success: var(--color-green-400);
+      --color-warning: var(--color-yellow-400);
 
       /* ── Chart tokens (dark) ─────────────────────────────── */
       --color-chart-1: var(--color-indigo-400);

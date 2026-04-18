@@ -39,9 +39,7 @@ export function Progress({
           style={{ width: widthInterpolation }}
         />
       </View>
-      {showLabel && (
-        <Text className="text-xs text-muted w-9 text-right">{value}%</Text>
-      )}
+      {showLabel && <Text className="text-xs text-muted w-9 text-right">{value}%</Text>}
     </View>
   );
 }

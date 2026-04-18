@@ -10,7 +10,10 @@ interface BannerProps {
   className?: string;
 }
 
-const variantStyles: Record<BannerVariant, { container: string; title: string; message: string; border: string }> = {
+const variantStyles: Record<
+  BannerVariant,
+  { container: string; title: string; message: string; border: string }
+> = {
   info: {
     container: 'bg-blue-100 border-blue-700',
     title: 'text-blue-700',
@@ -45,9 +48,7 @@ export function Banner({ variant, title, message, onDismiss, className = '' }: B
       className={`flex-row items-start border-l-4 rounded-r-lg px-4 py-3 ${styles.container} ${className}`}
     >
       <View className="flex-1">
-        {title && (
-          <Text className={`text-sm font-semibold mb-0.5 ${styles.title}`}>{title}</Text>
-        )}
+        {title && <Text className={`text-sm font-semibold mb-0.5 ${styles.title}`}>{title}</Text>}
         <Text className={`text-sm ${styles.message}`}>{message}</Text>
       </View>
       {onDismiss && (

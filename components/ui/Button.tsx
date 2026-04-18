@@ -1,4 +1,9 @@
-import { TouchableOpacity, Text, ActivityIndicator, type TouchableOpacityProps } from 'react-native';
+import {
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  type TouchableOpacityProps,
+} from 'react-native';
 
 type ButtonVariant = 'default' | 'outline' | 'ghost' | 'destructive';
 type ButtonSize = 'sm' | 'md' | 'lg';

@@ -20,14 +20,11 @@ export function AnimatedNumber({
 }: AnimatedNumberProps) {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const currentValue = useRef(0);
-  const [displayValue, setDisplayValue] = useState(
-    decimals > 0 ? (0).toFixed(decimals) : '0'
-  );
+  const [displayValue, setDisplayValue] = useState(decimals > 0 ? (0).toFixed(decimals) : '0');
 
   useEffect(() => {
     const listenerId = animatedValue.addListener(({ value: v }) => {
-      const formatted =
-        decimals > 0 ? v.toFixed(decimals) : String(Math.round(v));
+      const formatted = decimals > 0 ? v.toFixed(decimals) : String(Math.round(v));
       setDisplayValue(formatted);
     });
 

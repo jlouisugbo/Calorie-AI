@@ -18,8 +18,7 @@ export function SparkLine({
   positive,
   className = '',
 }: SparkLineProps) {
-  const finalColor =
-    positive === true ? '#16a34a' : positive === false ? '#dc2626' : color;
+  const finalColor = positive === true ? '#16a34a' : positive === false ? '#dc2626' : color;
 
   if (data.length === 0) {
     return <View className={className} style={{ width, height }} />;

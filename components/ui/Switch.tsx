@@ -38,7 +38,9 @@ export function Switch({
       className={`flex-row items-center gap-3 ${disabled ? 'opacity-50' : ''} ${className}`}
     >
       {label && <Text className="text-sm text-text-base">{label}</Text>}
-      <View className={`w-12 h-6 rounded-full justify-center ${value ? 'bg-primary' : 'bg-gray-300'}`}>
+      <View
+        className={`w-12 h-6 rounded-full justify-center ${value ? 'bg-primary' : 'bg-gray-300'}`}
+      >
         <Animated.View
           style={{ transform: [{ translateX: thumbTranslateX }] }}
           className="w-5 h-5 rounded-full bg-white shadow-sm"

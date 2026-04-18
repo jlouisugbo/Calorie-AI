@@ -102,7 +102,9 @@ export default function ChatScreen() {
             {isLoading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text className={`text-sm font-medium ${!input.trim() ? 'text-muted' : 'text-white'}`}>
+              <Text
+                className={`text-sm font-medium ${!input.trim() ? 'text-muted' : 'text-white'}`}
+              >
                 Send
               </Text>
             )}

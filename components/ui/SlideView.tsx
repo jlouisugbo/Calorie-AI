@@ -1,4 +1,4 @@
-import { MotiView } from 'moti';
+import { MotiView, type MotiTransitionProp } from 'moti';
 import { type ViewProps } from 'react-native';
 
 type SlideDirection = 'bottom' | 'top' | 'left' | 'right';
@@ -49,7 +49,7 @@ export function SlideView({
     <MotiView
       from={{ opacity: 0, ...hiddenTranslate }}
       animate={{ opacity: 1, translateY: 0, translateX: 0 }}
-      transition={{ type: 'spring', damping: 18, stiffness: 180, delay }}
+      transition={{ type: 'spring', damping: 18, stiffness: 180, delay } as MotiTransitionProp<any>}
       className={className}
       {...props}
     >
@@ -73,7 +73,7 @@ export function SlideOut({
     <MotiView
       from={{ opacity: 1, translateY: 0, translateX: 0 }}
       animate={{ opacity: 0, ...exitTranslate }}
-      transition={{ type: 'spring', damping: 18, stiffness: 180, delay }}
+      transition={{ type: 'spring', damping: 18, stiffness: 180, delay } as MotiTransitionProp<any>}
       className={className}
       {...props}
     >

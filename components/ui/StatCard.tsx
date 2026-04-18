@@ -31,12 +31,8 @@ export function StatCard({
   return (
     <Card className={className}>
       <View className="flex-row items-center justify-between mb-1">
-        <Text className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-          {label}
-        </Text>
-        {icon !== undefined && (
-          <View className="ml-2">{icon}</View>
-        )}
+        <Text className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</Text>
+        {icon !== undefined && <View className="ml-2">{icon}</View>}
       </View>
 
       <View className="my-2">
@@ -61,9 +57,7 @@ export function StatCard({
           <Text className={`text-sm font-semibold ${trendColor}`}>
             {trendArrow} {trendAbs}%
           </Text>
-          {trendLabel !== undefined && (
-            <Text className="text-sm text-gray-500">{trendLabel}</Text>
-          )}
+          {trendLabel !== undefined && <Text className="text-sm text-gray-500">{trendLabel}</Text>}
         </View>
       )}
     </Card>

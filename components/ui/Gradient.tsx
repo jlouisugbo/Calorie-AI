@@ -59,9 +59,7 @@ export function Gradient({
 
 export function GlassCard({ children, className = '' }: GlassCardProps) {
   return (
-    <View
-      className={`bg-white/10 border border-white/20 rounded-2xl ${className}`}
-    >
+    <View className={`bg-white/10 border border-white/20 rounded-2xl ${className}`}>
       {children}
     </View>
   );

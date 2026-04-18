@@ -1,4 +1,4 @@
-import { MotiView } from 'moti';
+import { MotiView, type MotiTransitionProp } from 'moti';
 import { type ViewProps } from 'react-native';
 
 interface FadeViewProps extends ViewProps {
@@ -26,7 +26,7 @@ export function FadeView({
     <MotiView
       from={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ type: 'timing', duration, delay }}
+      transition={{ type: 'timing', duration, delay } as MotiTransitionProp<any>}
       className={className}
       {...props}
     >
@@ -46,7 +46,7 @@ export function FadeOut({
     <MotiView
       from={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ type: 'timing', duration, delay }}
+      transition={{ type: 'timing', duration, delay } as MotiTransitionProp<any>}
       className={className}
       {...props}
     >
