@@ -1,6 +1,8 @@
 import { supabase } from './client';
 import type { Profile, OnboardingData } from './types';
 
+export type { UserProfile } from './profile-server';
+
 export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
@@ -14,7 +16,7 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
 export async function upsertProfile(
   userId: string,
-  data: Partial<OnboardingData>
+  data: Partial<OnboardingData>,
 ): Promise<Profile | null> {
   const { data: profile, error } = await supabase
     .from('profiles')

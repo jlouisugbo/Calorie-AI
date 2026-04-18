@@ -2,11 +2,14 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAIStore } from '@/store/aiStore';
+import { useLocationStore } from '@/store/locationStore';
 
 export default function ChatScreen() {
   const [input, setInput] = useState('');
   const scrollRef = useRef<ScrollView>(null);
-  const { messages, isLoading, sendMessage } = useAIStore();
+  const { messages, isLoading, error, sendMessage } = useAIStore();
+  const coords = useLocationStore((s) => s.coords);
+  const permissionStatus = useLocationStore((s) => s.permissionStatus);
 
   const SUGGESTIONS = [
     'What should I eat next?',
@@ -35,7 +38,13 @@ export default function ChatScreen() {
           </View>
           <View>
             <Text className="text-lg font-bold text-gray-900">Nouri</Text>
-            <Text className="text-sm text-teal-600">Your nutrition coach</Text>
+            <Text className="text-xs text-teal-600">
+              {coords
+                ? `Near ${coords.latitude.toFixed(3)}, ${coords.longitude.toFixed(3)}`
+                : permissionStatus === 'denied'
+                  ? 'Location off'
+                  : 'Your nutrition coach'}
+            </Text>
           </View>
         </View>
 
@@ -80,7 +89,7 @@ export default function ChatScreen() {
         {/* Bottom Area: Suggestions + Input */}
         <View className="px-4 pb-6 pt-2 bg-white border-t border-gray-100">
           
-          {/* Quick Ask Chips (Only show if no messages sent yet) */}
+          {/* Quick Ask Chips */}
           {messages.length === 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
               <View className="flex-row gap-2 pr-4">

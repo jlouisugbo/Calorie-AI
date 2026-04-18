@@ -1,8 +1,9 @@
 import { create } from 'zustand';
-import { sendChatMessage } from '@/services/ai';
+import { runAgentTurn } from '@/services/ai';
+import { useLocationStore } from '@/store/locationStore';
+import { supabase } from '@/lib/supabase/client';
 import type { Message, AnthropicMessage } from '@/types';
 import { getSystemPrompt, PromptMode } from '@/services/promptBuilder';
-import { supabase } from '@/lib/supabase/client';
 import { getProfile } from '@/lib/supabase/profile';
 import type { Profile } from '@/lib/supabase/types';
 
@@ -14,11 +15,21 @@ interface AIStore {
   systemPrompt: string;
   profile: Profile | null;
   mealLogs: any[];
+  lastToolCalls: { name: string; isError: boolean }[];
   
   initializeData: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   clearMessages: () => void;
   setMode: (mode: PromptMode) => void;
+}
+
+async function getCurrentUserId(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getUser();
+    return data.user?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export const useAIStore = create<AIStore>((set, get) => ({
@@ -29,6 +40,7 @@ export const useAIStore = create<AIStore>((set, get) => ({
   systemPrompt: 'Loading context...',
   profile: null,
   mealLogs: [],
+  lastToolCalls: [],
 
   initializeData: async () => {
     try {
@@ -37,10 +49,7 @@ export const useAIStore = create<AIStore>((set, get) => ({
 
       const userId = session.user.id;
       
-      // Fetch profile
       const profile = await getProfile(userId);
-      
-      // Fetch meal logs for today (simplistic approach for demo)
       const { data: logs } = await supabase
         .from('meal_logs')
         .select('*')
@@ -70,27 +79,48 @@ export const useAIStore = create<AIStore>((set, get) => ({
     }));
 
     try {
-      // Re-initialize data just before sending to ensure we have the absolute latest DB state
       await get().initializeData();
       
       const { messages, systemPrompt } = get();
-      const apiMessages: AnthropicMessage[] = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      
+      // We pass the systemPrompt as the first message to the backend 
+      // so that it can pass it to the Claude API
+      const apiMessages: AnthropicMessage[] = [
+        { role: 'system' as any, content: systemPrompt },
+        ...messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }))
+      ];
 
-      const responseText = await sendChatMessage(apiMessages, systemPrompt);
+      const coords = useLocationStore.getState().coords;
+      const userId = await getCurrentUserId();
+
+      const result = await runAgentTurn({
+        messages: apiMessages,
+        userId,
+        coords: coords
+          ? {
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+              accuracy: coords.accuracy,
+              timestamp: coords.timestamp,
+            }
+          : null,
+      });
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: responseText,
+        content: result.text,
         createdAt: new Date(),
       };
 
       set((state) => ({
         messages: [...state.messages, assistantMessage],
         isLoading: false,
+        lastToolCalls:
+          result.trace?.toolCalls.map((c) => ({ name: c.name, isError: c.isError })) ?? [],
       }));
     } catch (err) {
       set({
@@ -100,7 +130,7 @@ export const useAIStore = create<AIStore>((set, get) => ({
     }
   },
 
-  clearMessages: () => set({ messages: [], error: null }),
+  clearMessages: () => set({ messages: [], error: null, lastToolCalls: [] }),
 
   setMode: (mode: PromptMode) => {
     const state = get();

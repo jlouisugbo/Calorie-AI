@@ -1,0 +1,22 @@
+{"sessionId":"b940fe","hypothesisId":"B","location":"NotificationBootstrap.tsx:module","message":"NotificationBootstrap module loaded","data":{"hasNotifications":true},"timestamp":1776531201124}
+{"sessionId":"b940fe","hypothesisId":"B","location":"NotificationBootstrap.tsx:setHandler","message":"setNotificationHandler ok","data":{},"timestamp":1776531201126}
+{"sessionId":"b940fe","hypothesisId":"D","location":"app/_layout.tsx:module","message":"_layout module loaded","data":{},"timestamp":1776531201126}
+{"sessionId":"b940fe","hypothesisId":"D","location":"app/_layout.tsx:RootLayout","message":"RootLayout render entry","data":{},"timestamp":1776531201203}
+{"sessionId":"b940fe","hypothesisId":"A","location":"app/_layout.tsx:useFonts","message":"fonts hook state","data":{"fontsLoaded":false,"fontsError":null},"timestamp":1776531201203}
+{"sessionId":"b940fe","hypothesisId":"D","location":"app/_layout.tsx:RootLayout","message":"RootLayout render entry","data":{},"timestamp":1776531201217}
+{"sessionId":"b940fe","hypothesisId":"A","location":"app/_layout.tsx:useFonts","message":"fonts hook state","data":{"fontsLoaded":true,"fontsError":null},"timestamp":1776531201217}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"checkProfile entry","data":{},"timestamp":1776531201240}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"getSession ok","data":{"hasUserId":false},"timestamp":1776531201251}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"checkProfile entry","data":{},"timestamp":1776531668113}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"getSession ok","data":{"hasUserId":true},"timestamp":1776531668114}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"getProfile ok","data":{"hasProfile":true},"timestamp":1776531668799}
+{"sessionId":"b940fe","hypothesisId":"B","location":"NotificationBootstrap.tsx:module","message":"NotificationBootstrap module loaded","data":{"hasNotifications":true},"timestamp":1776531908511}
+{"sessionId":"b940fe","hypothesisId":"B","location":"NotificationBootstrap.tsx:setHandler","message":"setNotificationHandler ok","data":{},"timestamp":1776531908513}
+{"sessionId":"b940fe","hypothesisId":"D","location":"app/_layout.tsx:module","message":"_layout module loaded","data":{},"timestamp":1776531908513}
+{"sessionId":"b940fe","hypothesisId":"D","location":"app/_layout.tsx:RootLayout","message":"RootLayout render entry","data":{},"timestamp":1776531908589}
+{"sessionId":"b940fe","hypothesisId":"A","location":"app/_layout.tsx:useFonts","message":"fonts hook state","data":{"fontsLoaded":false,"fontsError":null},"timestamp":1776531908589}
+{"sessionId":"b940fe","hypothesisId":"D","location":"app/_layout.tsx:RootLayout","message":"RootLayout render entry","data":{},"timestamp":1776531908603}
+{"sessionId":"b940fe","hypothesisId":"A","location":"app/_layout.tsx:useFonts","message":"fonts hook state","data":{"fontsLoaded":true,"fontsError":null},"timestamp":1776531908603}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"checkProfile entry","data":{},"timestamp":1776531908627}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"getSession ok","data":{"hasUserId":true},"timestamp":1776531908638}
+{"sessionId":"b940fe","hypothesisId":"C","location":"app/index.tsx:checkProfile","message":"getProfile ok","data":{"hasProfile":true},"timestamp":1776531908875}
