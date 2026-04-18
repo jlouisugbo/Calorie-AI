@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const TABS = [
   { name: 'home', icon: 'home' as const, label: 'Home' },
   { name: 'calendar', icon: 'calendar' as const, label: 'Calendar' },
-  { name: 'log', icon: 'camera' as const, label: null, isCenter: true },
+  { name: 'scan', icon: 'camera' as const, label: null, isCenter: true },
   { name: 'chat', icon: 'message-circle' as const, label: 'Chat' },
   { name: 'profile', icon: 'user' as const, label: 'Profile' },
 ];
