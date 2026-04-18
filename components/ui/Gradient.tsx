@@ -38,7 +38,7 @@ export function Gradient({
   colors = ['#4f46e5', '#7c3aed'],
   direction = 'vertical',
   children,
-  className = '',
+  className: _className = '',
   style,
   ...props
 }: GradientProps) {

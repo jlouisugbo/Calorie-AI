@@ -1,10 +1,4 @@
-import {
-  Modal as RNModal,
-  View,
-  Text,
-  TouchableOpacity,
-  type ModalProps as RNModalProps,
-} from 'react-native';
+import { Modal as RNModal, View, Text, TouchableOpacity } from 'react-native';
 
 interface ModalProps {
   visible: boolean;

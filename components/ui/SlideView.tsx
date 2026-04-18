@@ -39,7 +39,7 @@ export function SlideView({
   from = 'bottom',
   distance = 24,
   delay = 0,
-  duration,
+  duration: _duration,
   className = '',
   ...props
 }: SlideViewProps) {
@@ -63,7 +63,7 @@ export function SlideOut({
   from = 'bottom',
   distance = 24,
   delay = 0,
-  duration,
+  duration: _duration,
   className = '',
   ...props
 }: SlideOutProps) {
