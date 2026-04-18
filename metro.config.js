@@ -1,10 +1,10 @@
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require("nativewind/metro");
-const path = require("path");
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
+const path = require('path');
 
 const projectRoot = __dirname;
 // Parent repo sits two levels up from .worktrees/profile/
-const parentRoot = path.resolve(projectRoot, "../..");
+const parentRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
@@ -12,10 +12,9 @@ const config = getDefaultConfig(projectRoot);
 // app/(tabs)/ from being discovered alongside the worktree's app/(tabs)/
 config.watchFolders = [projectRoot];
 
-// Block Metro from resolving source files inside the parent repo's app dir
-const { BlockList } = require("metro-config");
-config.resolver.blockList = BlockList([
-  new RegExp(`^${parentRoot.replace(/\//g, "\\/")}\/app\/.*$`),
-]);
+// Block the parent repo's app/ from Metro's resolver so it doesn't
+// double-discover routes alongside the worktree's app/
+const escapedParent = parentRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+config.resolver.blockList = new RegExp(`^${escapedParent}/app/.*$`);
 
-module.exports = withNativeWind(config, { input: "./global.css" });
+module.exports = withNativeWind(config, { input: './global.css' });

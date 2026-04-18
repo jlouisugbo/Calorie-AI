@@ -8,6 +8,7 @@ import type { Profile } from '@/lib/supabase/types';
 import { Avatar } from '@/components/ui/Avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { ListItem } from '@/components/ui/ListItem';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -16,15 +17,6 @@ function titleCase(s: string): string {
 }
 
 // ─── sub-components ─────────────────────────────────────────────────────────
-
-function StatRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View className="flex-row justify-between items-center py-3 border-b border-border last:border-b-0">
-      <Text className="text-sm text-muted">{label}</Text>
-      <Text className="text-sm font-semibold text-text-base">{value}</Text>
-    </View>
-  );
-}
 
 function BmiGauge({ bmi, color, label }: { bmi: number; color: string; label: string }) {
   const pct = bmiGaugeFraction(bmi);
@@ -150,11 +142,7 @@ export default function ProfileScreen() {
                 <CardTitle>Body Mass Index</CardTitle>
               </CardHeader>
               <CardContent>
-                <BmiGauge
-                  bmi={bmiResult.value}
-                  color={bmiResult.color}
-                  label={bmiResult.label}
-                />
+                <BmiGauge bmi={bmiResult.value} color={bmiResult.color} label={bmiResult.label} />
                 <Text className="text-xs text-muted mt-4 leading-4">
                   Calculated from your height ({profile!.height_cm} cm) and weight (
                   {profile!.weight_kg} kg).
@@ -173,13 +161,17 @@ export default function ProfileScreen() {
               </CardHeader>
               <CardContent>
                 {!!profile!.height_cm && (
-                  <StatRow label="Height" value={`${profile!.height_cm} cm`} />
+                  <ListItem title="Height" trailing={<Text className="text-sm font-semibold text-text-base">{profile!.height_cm} cm</Text>} />
                 )}
                 {!!profile!.weight_kg && (
-                  <StatRow label="Weight" value={`${profile!.weight_kg} kg`} />
+                  <ListItem title="Weight" trailing={<Text className="text-sm font-semibold text-text-base">{profile!.weight_kg} kg</Text>} />
                 )}
-                {!!profile!.age && <StatRow label="Age" value={`${profile!.age} yrs`} />}
-                {profile!.sex && <StatRow label="Sex" value={titleCase(profile!.sex)} />}
+                {!!profile!.age && (
+                  <ListItem title="Age" trailing={<Text className="text-sm font-semibold text-text-base">{profile!.age} yrs</Text>} />
+                )}
+                {profile!.sex && (
+                  <ListItem title="Sex" trailing={<Text className="text-sm font-semibold text-text-base">{titleCase(profile!.sex)}</Text>} />
+                )}
               </CardContent>
             </Card>
           </View>
