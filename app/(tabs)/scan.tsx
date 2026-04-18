@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CaptureBar } from '@/components/scan/CaptureBar';
@@ -10,6 +10,12 @@ import { useFoodStore } from '@/store/foodStore';
 export default function ScanScreen() {
   const entries = useFoodStore((s) => s.entries);
   const addFromImage = useFoodStore((s) => s.addFromImage);
+  const load = useFoodStore((s) => s.load);
+  const loaded = useFoodStore((s) => s.loaded);
+
+  useEffect(() => {
+    if (!loaded) void load();
+  }, [loaded, load]);
 
   const handleImagePicked = useCallback(
     (uri: string) => {

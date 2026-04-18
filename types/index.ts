@@ -27,38 +27,8 @@ export interface FoodLogEntry {
   imageUri: string;
   createdAt: Date;
   status: FoodLogStatus;
+  /** LogMeal dish name(s) — persisted as meal_logs.description */
   dishName?: string;
   nutrition?: Nutrition;
   error?: string;
-}
-
-interface LogMealNutrient {
-  quantity?: number;
-  unit?: string;
-  label?: string;
-}
-
-interface LogMealRecognition {
-  name?: string;
-  prob?: number;
-}
-
-interface LogMealSegmentation {
-  recognition_results?: LogMealRecognition[];
-}
-
-export interface LogMealRawResponse {
-  imageId?: number | string;
-  foodName?: string[];
-  segmentation_results?: LogMealSegmentation[];
-  nutritional_info?: {
-    calories?: number;
-    totalNutrients?: {
-      ENERC_KCAL?: LogMealNutrient;
-      PROCNT?: LogMealNutrient;
-      CHOCDF?: LogMealNutrient;
-      FAT?: LogMealNutrient;
-      FIBTG?: LogMealNutrient;
-    };
-  };
 }

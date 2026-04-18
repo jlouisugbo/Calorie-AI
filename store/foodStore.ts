@@ -1,9 +1,14 @@
 import { create } from 'zustand';
 import { analyzeFoodImage } from '@/services/logmeal';
+import { supabase } from '@/lib/supabase/client';
+import { insertMealLog, listRecentMealLogs, type MealLogRow } from '@/lib/supabase/meals';
 import type { FoodLogEntry } from '@/types';
 
 interface FoodStore {
   entries: FoodLogEntry[];
+  loaded: boolean;
+  loading: boolean;
+  load: () => Promise<void>;
   addFromImage: (imageUri: string) => Promise<void>;
   retry: (id: string) => Promise<void>;
   clear: () => void;
@@ -13,78 +18,96 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-async function runAnalysis(id: string, uri: string, set: (fn: (s: FoodStore) => Partial<FoodStore>) => void) {
+function rowToEntry(row: MealLogRow): FoodLogEntry {
+  return {
+    id: row.id,
+    imageUri: row.photo_url ?? '',
+    createdAt: new Date(row.logged_at),
+    status: 'done',
+    dishName: row.description ?? undefined,
+    nutrition: {
+      calories: row.calories ?? undefined,
+      protein_g: row.protein_g ?? undefined,
+      carbs_g: row.carbs_g ?? undefined,
+      fat_g: row.fat_g ?? undefined,
+    },
+  };
+}
+
+async function getCurrentUserId(): Promise<string | null> {
+  const { data } = await supabase.auth.getUser();
+  return data?.user?.id ?? null;
+}
+
+type SetFn = (fn: (state: FoodStore) => Partial<FoodStore>) => void;
+
+async function runAnalysis(id: string, uri: string, set: SetFn) {
   try {
-    const { dishName, nutrition } = await analyzeFoodImage(uri);
+    const analysis = await analyzeFoodImage(uri, uri);
+
+    // Persist to Supabase if the user is signed in.
+    const userId = await getCurrentUserId();
+    console.log('[foodStore] userId:', userId ?? '(NOT SIGNED IN — skipping DB insert)');
+
+    let persistedId = id;
+    let loggedAt = new Date();
+
+    if (userId) {
+      const row = await insertMealLog(userId, analysis.mealLogFields);
+      console.log('[foodStore] insert result:', row ? `saved row ${row.id}` : 'FAILED (see earlier error)');
+      if (row) {
+        persistedId = row.id;
+        loggedAt = new Date(row.logged_at);
+      }
+    }
+
     set((state) => ({
       entries: state.entries.map((e) =>
-        e.id === id ? { ...e, status: 'done', dishName, nutrition, error: undefined } : e
+        e.id === id
+          ? {
+              ...e,
+              id: persistedId,
+              status: 'done',
+              dishName: analysis.description ?? undefined,
+              nutrition: analysis.nutrition,
+              createdAt: loggedAt,
+              error: undefined,
+            }
+          : e,
       ),
     }));
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to analyze image';
     set((state) => ({
       entries: state.entries.map((e) =>
-        e.id === id ? { ...e, status: 'error', error: message } : e
+        e.id === id ? { ...e, status: 'error', error: message } : e,
       ),
     }));
   }
 }
 
-// Mock entries for UI preview — replace with `[]` once real captures flow through.
-const MOCK_ENTRIES: FoodLogEntry[] = [
-  {
-    id: 'mock-1',
-    imageUri: 'https://picsum.photos/seed/salmon/400/400',
-    createdAt: new Date(Date.now() - 5 * 60 * 1000),
-    status: 'done',
-    dishName: 'Grilled Salmon Bowl',
-    nutrition: { calories: 720, protein_g: 48, carbs_g: 52, fat_g: 28, fiber_g: 6 },
-  },
-  {
-    id: 'mock-2',
-    imageUri: 'https://picsum.photos/seed/caesar/400/400',
-    createdAt: new Date(Date.now() - 60 * 60 * 1000),
-    status: 'done',
-    dishName: 'Caesar Salad',
-    nutrition: { calories: 310, protein_g: 9, carbs_g: 24, fat_g: 18, fiber_g: 4 },
-  },
-  {
-    id: 'mock-3',
-    imageUri: 'https://picsum.photos/seed/pizza/400/400',
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    status: 'done',
-    dishName: 'Margherita Pizza',
-    nutrition: { calories: 580, protein_g: 22, carbs_g: 68, fat_g: 24, fiber_g: 3 },
-  },
-  {
-    id: 'mock-4',
-    imageUri: 'https://picsum.photos/seed/oatmeal/400/400',
-    createdAt: new Date(Date.now() - 26 * 60 * 60 * 1000),
-    status: 'done',
-    dishName: 'Oatmeal with Berries',
-    nutrition: { calories: 340, protein_g: 12, carbs_g: 58, fat_g: 7, fiber_g: 8 },
-  },
-  {
-    id: 'mock-5',
-    imageUri: 'https://picsum.photos/seed/burger/400/400',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    status: 'done',
-    dishName: 'Burger & Fries',
-    nutrition: { calories: 820, protein_g: 34, carbs_g: 72, fat_g: 42, fiber_g: 5 },
-  },
-  {
-    id: 'mock-6',
-    imageUri: 'https://picsum.photos/seed/stirfry/400/400',
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    status: 'done',
-    dishName: 'Chicken Stir Fry',
-    nutrition: { calories: 540, protein_g: 42, carbs_g: 38, fat_g: 22, fiber_g: 5 },
-  },
-];
-
 export const useFoodStore = create<FoodStore>((set, get) => ({
-  entries: MOCK_ENTRIES,
+  entries: [],
+  loaded: false,
+  loading: false,
+
+  load: async () => {
+    if (get().loading) return;
+    set(() => ({ loading: true }));
+
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      set(() => ({ loaded: true, loading: false }));
+      return;
+    }
+
+    const rows = await listRecentMealLogs(userId);
+    set(() => ({
+      entries: rows.map(rowToEntry),
+      loaded: true,
+      loading: false,
+    }));
+  },
 
   addFromImage: async (imageUri) => {
     const id = newId();
@@ -103,11 +126,11 @@ export const useFoodStore = create<FoodStore>((set, get) => ({
     if (!existing) return;
     set((state) => ({
       entries: state.entries.map((e) =>
-        e.id === id ? { ...e, status: 'analyzing', error: undefined } : e
+        e.id === id ? { ...e, status: 'analyzing', error: undefined } : e,
       ),
     }));
     await runAnalysis(id, existing.imageUri, set);
   },
 
-  clear: () => set({ entries: [] }),
+  clear: () => set(() => ({ entries: [] })),
 }));
