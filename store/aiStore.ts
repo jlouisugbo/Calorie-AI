@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { runAgentTurn } from '@/services/ai';
 import { useLocationStore } from '@/store/locationStore';
 import { supabase } from '@/lib/supabase/client';
-import type { Message, AnthropicMessage } from '@/types';
+import type { Message } from '@/types';
 import { getSystemPrompt, PromptMode } from '@/services/promptBuilder';
 import { getProfile } from '@/lib/supabase/profile';
 import type { Profile } from '@/lib/supabase/types';
@@ -81,17 +81,12 @@ export const useAIStore = create<AIStore>((set, get) => ({
     try {
       await get().initializeData();
       
-      const { messages, systemPrompt } = get();
-      
-      // We pass the systemPrompt as the first message to the backend 
-      // so that it can pass it to the Claude API
-      const apiMessages: AnthropicMessage[] = [
-        { role: 'system' as any, content: systemPrompt },
-        ...messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        }))
-      ];
+      const { messages } = get();
+
+      const apiMessages = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
 
       const coords = useLocationStore.getState().coords;
       const userId = await getCurrentUserId();

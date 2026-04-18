@@ -1,16 +1,16 @@
 import { z } from 'zod';
 import { buildAgentContext, buildSystemPrompt } from '@/lib/agent/context';
 import { runAgent } from '@/lib/agent/runner';
-import type { AnthropicTextMessage } from '@/lib/agent/anthropic';
+import type { AgentTextMessage } from '@/lib/agent/openai';
 import { setUserState } from '@/lib/supabase/notifications';
 
 const messageSchema = z.object({
   role: z.enum(['user', 'assistant']),
-  content: z.string(),
+  content: z.string().min(1).max(4000),
 });
 
 const inputSchema = z.object({
-  messages: z.array(messageSchema).min(1),
+  messages: z.array(messageSchema).min(1).max(50),
   userId: z.string().uuid().optional().nullable(),
   coords: z
     .object({
@@ -73,23 +73,29 @@ export async function POST(request: Request) {
   }
 
   const system = buildSystemPrompt(ctx);
-  const anthropicMessages: AnthropicTextMessage[] = messages.map((m) => ({
+  const agentMessages: AgentTextMessage[] = messages.map((m) => ({
     role: m.role,
     content: m.content,
   }));
 
   try {
     const result = await runAgent({
-      messages: anthropicMessages,
+      messages: agentMessages,
       system,
       ctx,
     });
     return jsonResponse({
       text: result.text,
-      trace: result.trace,
+      trace: {
+        ...result.trace,
+        toolCalls: result.trace.toolCalls.map((call) => ({
+          name: call.name,
+          isError: call.isError,
+        })),
+      },
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Agent run failed';
-    return jsonResponse({ error: message }, 502);
+    console.error('Agent run failed', err);
+    return jsonResponse({ error: 'Chat request failed' }, 502);
   }
 }

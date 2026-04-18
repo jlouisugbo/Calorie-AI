@@ -11,8 +11,8 @@ const inputSchema = z.object({
   userId: z.string().uuid().optional().nullable(),
   coords: z
     .object({
-      latitude: z.number(),
-      longitude: z.number(),
+      latitude: z.number().gte(-90).lte(90),
+      longitude: z.number().gte(-180).lte(180),
       accuracy: z.number().nullable().optional(),
       timestamp: z.number().nullable().optional(),
     })
@@ -67,7 +67,7 @@ You are speaking aloud. Keep replies short (1–3 sentences). When the user ment
     type: 'function' as const,
     name: t.name,
     description: t.description,
-    parameters: t.input_schema,
+    parameters: t.parameters,
   }));
 
   let res: Response;
@@ -92,17 +92,22 @@ You are speaking aloud. Keep replies short (1–3 sentences). When the user ment
       }),
     });
   } catch (err) {
+    console.error('OpenAI Realtime session request failed', err);
     return jsonResponse(
-      { error: err instanceof Error ? err.message : 'OpenAI fetch failed' },
+      { error: 'OpenAI fetch failed' },
       502,
     );
   }
 
   if (!res.ok) {
+    const detail = await res.text();
+    console.error('OpenAI Realtime session create failed', {
+      status: res.status,
+      body: detail,
+    });
     return jsonResponse(
       {
         error: `OpenAI Realtime session create failed (${res.status})`,
-        detail: await res.text(),
       },
       502,
     );

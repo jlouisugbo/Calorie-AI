@@ -2,6 +2,7 @@ import { getProfileServer, type UserProfile } from '@/lib/supabase/profile-serve
 import { getLatestBiomarkers, type BiomarkerRow } from '@/lib/supabase/biomarkers';
 import { getUserState } from '@/lib/supabase/notifications';
 import { shouldUseFakeCalendar } from './fake-calendar';
+import { generateBusyProBiomarkers } from './sample-biomarkers';
 
 export interface AgentCoords {
   latitude: number;
@@ -15,6 +16,7 @@ export interface AgentContext {
   profile: UserProfile | null;
   coords: AgentCoords | null;
   biomarkers: BiomarkerRow[];
+  biomarkersAreDemo: boolean;
   timezone: string;
   nowIso: string;
 }
@@ -60,11 +62,18 @@ export async function buildAgentContext(args: BuildContextArgs): Promise<AgentCo
     }
   }
 
+  let biomarkersAreDemo = false;
+  if (biomarkers.length === 0 && args.loadBiomarkers !== false) {
+    biomarkers = generateBusyProBiomarkers(userId ?? 'demo', 3) as BiomarkerRow[];
+    biomarkersAreDemo = true;
+  }
+
   return {
     userId,
     profile,
     coords,
     biomarkers,
+    biomarkersAreDemo,
     timezone: profile?.timezone ?? 'America/New_York',
     nowIso: new Date().toISOString(),
   };
@@ -77,7 +86,9 @@ function fmt(value: number | null | undefined, suffix = ''): string {
 export function buildSystemPrompt(ctx: AgentContext): string {
   const lines: string[] = [
     'You are Calorie-AI, a personal nutrition and lifestyle coach embedded in a mobile app.',
-    'Be concise, warm, and specific. Use the available tools when current facts (location, calendar, biomarkers, nearby places) would help. Never invent restaurant names — call search_nearby_places.',
+    'Style: warm, direct, no fluff. Answer in AT MOST 3 short paragraphs (2–4 sentences each). Plain prose — no bullet lists or headers unless the user explicitly asks for one. End with a one-line verdict on its own line: "On track", "Slightly off", or "Off track" — followed by a single concrete next step (one sentence).',
+    'Use tools when current facts (location, calendar, biomarkers, nearby places) would help. Never invent restaurant names — call search_nearby_places.',
+    'On-track rubric: sleep ≥7h AND HRV ≥45ms AND fasting glucose <100 → On track. Two of three off → Slightly off. All three off (sleep <6.5h, HRV <40ms, glucose ≥105) → Off track.',
     '',
     `Current time: ${ctx.nowIso} (${ctx.timezone}).`,
   ];
@@ -124,7 +135,11 @@ export function buildSystemPrompt(ctx: AgentContext): string {
     const latest = ctx.biomarkers[0];
     const previous = ctx.biomarkers[1] ?? null;
     lines.push('');
-    lines.push('Latest biomarkers (most recent first):');
+    lines.push(
+      ctx.biomarkersAreDemo
+        ? 'Latest biomarkers (DEMO snapshot — reason as if real, but if the user asks where the numbers came from, say it is sample data until their wearable is connected):'
+        : 'Latest biomarkers (most recent first):',
+    );
     lines.push(
       `- ${latest.recorded_at}: glucose ${fmt(latest.glucose_mg_dl, ' mg/dL')}, resting HR ${fmt(latest.resting_hr)}, HRV ${fmt(latest.hrv_ms, ' ms')}, sleep ${fmt(latest.sleep_hours, ' h')}, steps ${fmt(latest.steps)}`,
     );

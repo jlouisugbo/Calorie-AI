@@ -1,7 +1,7 @@
 import { runAgent } from './runner';
 import { TOOL_DEFS } from './tools';
 import { buildAgentContext, buildSystemPrompt, type AgentContext } from './context';
-import type { AnthropicToolDef } from './anthropic';
+import type { AgentToolDef } from './openai';
 
 export interface ProposedNotification {
   skip: boolean;
@@ -11,11 +11,12 @@ export interface ProposedNotification {
   deeplink?: string;
 }
 
-const PROPOSE_TOOL: AnthropicToolDef = {
+const PROPOSE_TOOL: AgentToolDef = {
+  type: 'function',
   name: 'propose_notification',
   description:
     'Decide whether to push a proactive notification right now. Use skip=true when there is no clear, time-sensitive value within the next 30 minutes.',
-  input_schema: {
+  parameters: {
     type: 'object',
     properties: {
       skip: {
@@ -43,6 +44,7 @@ const PROPOSE_TOOL: AnthropicToolDef = {
     required: ['skip'],
     additionalProperties: false,
   },
+  strict: false,
 };
 
 const PLANNER_SYSTEM_SUFFIX = `
