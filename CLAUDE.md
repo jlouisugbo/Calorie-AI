@@ -16,6 +16,8 @@
 
 **You must match the Forest template.** All new UI in **`components/ui/`** must use the **forest / cream / beige** system defined in **`global.css`**: semantic tokens (`bg-background`, `bg-primary`, `text-foreground`, `border-primary`, etc.) and the palette described in the **Colors** section of this file — **no one-off hex palettes** unless you are deliberately mapping them into `global.css` first.
 
+**You must use NativeWind for styling**. We do not want any custom style sheets for everything. We want it all in NativeWind for styling purposes.
+
 **Summary:** *Reuse `components/ui/` → promote new primitives there → theme everything from `global.css` (Forest).* **Ignoring this wastes review time and breaks visual consistency.**
 
 ---
