@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  ActivityIndicator,
-} from 'react-native';
+import { Animated, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase/client';
 import { getProfile } from '@/lib/supabase/profile';
@@ -39,22 +32,14 @@ function titleCase(s: string): string {
 // ─── BMI gauge ───────────────────────────────────────────────────────────────
 
 const SEGMENTS = [
-  { flex: 1, color: '#93c5fd', label: '10' },   // underweight — blue-300
-  { flex: 2, color: '#4ade80', label: '18.5' },  // healthy     — green-400
-  { flex: 1, color: '#fbbf24', label: '25' },    // overweight  — yellow-400
-  { flex: 1, color: '#fb923c', label: '30' },    // obese I     — orange-400
-  { flex: 1, color: '#f87171', label: '40' },    // obese II+   — red-400
+  { flex: 1, color: '#93c5fd', label: '10' }, // underweight — blue-300
+  { flex: 2, color: '#4ade80', label: '18.5' }, // healthy     — green-400
+  { flex: 1, color: '#fbbf24', label: '25' }, // overweight  — yellow-400
+  { flex: 1, color: '#fb923c', label: '30' }, // obese I     — orange-400
+  { flex: 1, color: '#f87171', label: '40' }, // obese II+   — red-400
 ];
 
-function BmiGauge({
-  bmi,
-  color,
-  label,
-}: {
-  bmi: number;
-  color: string;
-  label: string;
-}) {
+function BmiGauge({ bmi, color, label }: { bmi: number; color: string; label: string }) {
   const pct = bmiGaugeFraction(bmi);
   const animPct = useRef(new Animated.Value(0)).current;
 
@@ -192,10 +177,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* ── Hero header ────────────────────────────────────── */}
         <View style={styles.hero}>
           <Avatar name={displayName} size="xl" />
@@ -215,23 +197,6 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.dividerLine} />
-
-        {/* ── BMI ────────────────────────────────────────────── */}
-        {bmiResult && (
-          <>
-            <SectionLabel title="Body Mass Index" />
-            <View style={[styles.card, styles.bmiCard]}>
-              <BmiGauge
-                bmi={bmiResult.value}
-                color={bmiResult.color}
-                label={bmiResult.label}
-              />
-              <Text style={styles.bmiCaption}>
-                Based on {profile!.height_cm} cm height · {profile!.weight_kg} kg weight
-              </Text>
-            </View>
-          </>
-        )}
 
         {/* ── Daily target ────────────────────────────────────── */}
         {!!profile?.daily_calorie_target && (
@@ -254,33 +219,25 @@ export default function ProfileScreen() {
               {!!profile!.height_cm && (
                 <ListItem
                   title="Height"
-                  trailing={
-                    <Text style={styles.statValue}>{profile!.height_cm} cm</Text>
-                  }
+                  trailing={<Text style={styles.statValue}>{profile!.height_cm} cm</Text>}
                 />
               )}
               {!!profile!.weight_kg && (
                 <ListItem
                   title="Weight"
-                  trailing={
-                    <Text style={styles.statValue}>{profile!.weight_kg} kg</Text>
-                  }
+                  trailing={<Text style={styles.statValue}>{profile!.weight_kg} kg</Text>}
                 />
               )}
               {!!profile!.age && (
                 <ListItem
                   title="Age"
-                  trailing={
-                    <Text style={styles.statValue}>{profile!.age} yrs</Text>
-                  }
+                  trailing={<Text style={styles.statValue}>{profile!.age} yrs</Text>}
                 />
               )}
               {profile!.sex && (
                 <ListItem
                   title="Sex"
-                  trailing={
-                    <Text style={styles.statValue}>{titleCase(profile!.sex)}</Text>
-                  }
+                  trailing={<Text style={styles.statValue}>{titleCase(profile!.sex)}</Text>}
                 />
               )}
             </View>
@@ -311,6 +268,19 @@ export default function ProfileScreen() {
                   {titleCase(r)}
                 </Badge>
               ))}
+            </View>
+          </>
+        )}
+
+        {/* ── BMI ─────────────────────────────────────────────── */}
+        {bmiResult && (
+          <>
+            <SectionLabel title="Body Mass Index" />
+            <View style={[styles.card, styles.bmiCard]}>
+              <BmiGauge bmi={bmiResult.value} color={bmiResult.color} label={bmiResult.label} />
+              <Text style={styles.bmiCaption}>
+                Based on {profile!.height_cm} cm height · {profile!.weight_kg} kg weight
+              </Text>
             </View>
           </>
         )}
@@ -387,9 +357,9 @@ const styles = StyleSheet.create({
   bmiHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
   bmiValue: {
     fontFamily: 'Syne_800ExtraBold',
-    fontSize: 56,
+    fontSize: 36,
     color: T.text,
-    lineHeight: 60,
+    lineHeight: 40,
   },
   bmiPill: {
     flexDirection: 'row',
