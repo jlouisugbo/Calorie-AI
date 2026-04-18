@@ -1,464 +1,478 @@
-import { useEffect, useRef, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Linking, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '@/lib/supabase/client';
-import { getProfile } from '@/lib/supabase/profile';
-import { calculateBmi, bmiGaugeFraction } from '@/lib/bmi';
-import type { Profile } from '@/lib/supabase/types';
+import { useFocusEffect, useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
 import { ListItem } from '@/components/ui/ListItem';
+import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
+import { StatCard } from '@/components/ui/StatCard';
 
-// ─── tokens (mapped from global.css forest palette) ─────────────────────────
+import { supabase } from '@/lib/supabase/client';
+import { getProfile } from '@/lib/supabase/profile';
+import {
+  getLatestBiomarkersClient,
+  type BiomarkerRow,
+} from '@/lib/supabase/biomarkers-client';
+import type {
+  ActivityLevel,
+  DietaryRestriction,
+  NutritionGoal,
+  Profile,
+  Sex,
+} from '@/lib/supabase/types';
+import { useCalendarStore } from '@/store/calendarStore';
 
-const T = {
-  bg: '#f9f4e8',
-  surface: '#f4edd9',
-  surfaceDeep: '#ede3c8',
-  border: '#e9dbbe',
-  forest: '#3c6e21',
-  forestLight: '#5a9e34',
-  text: '#1a2416',
-  muted: '#7a8c70',
-  cream: '#f9f4e8',
+type NotifStatus = 'granted' | 'denied' | 'undetermined' | 'unknown';
+
+const GOAL_LABELS: Record<NutritionGoal, string> = {
+  weight_loss: 'Lose Weight',
+  muscle_gain: 'Build Muscle',
+  maintain_weight: 'Maintain Weight',
+  eat_healthier: 'Eat Healthier',
+  boost_energy: 'Boost Energy',
+  improve_performance: 'Improve Performance',
 };
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+const RESTRICTION_LABELS: Record<DietaryRestriction, string> = {
+  vegetarian: 'Vegetarian',
+  vegan: 'Vegan',
+  gluten_free: 'Gluten Free',
+  dairy_free: 'Dairy Free',
+  nut_free: 'Nut Free',
+  paleo: 'Paleo',
+  keto: 'Keto',
+  halal: 'Halal',
+  kosher: 'Kosher',
+};
 
-function titleCase(s: string): string {
-  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
+  sedentary: 'Sedentary',
+  lightly_active: 'Lightly Active',
+  active: 'Active',
+  very_active: 'Very Active',
+};
+
+const SEX_LABELS: Record<Sex, string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+  prefer_not_to_say: 'Prefer not to say',
+};
+
+function formatRecordedAt(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  } catch {
+    return iso;
+  }
 }
 
-// ─── BMI gauge ───────────────────────────────────────────────────────────────
-
-const SEGMENTS = [
-  { flex: 1, color: '#93c5fd', label: '10' }, // underweight — blue-300
-  { flex: 2, color: '#4ade80', label: '18.5' }, // healthy     — green-400
-  { flex: 1, color: '#fbbf24', label: '25' }, // overweight  — yellow-400
-  { flex: 1, color: '#fb923c', label: '30' }, // obese I     — orange-400
-  { flex: 1, color: '#f87171', label: '40' }, // obese II+   — red-400
-];
-
-function BmiGauge({ bmi, color, label }: { bmi: number; color: string; label: string }) {
-  const pct = bmiGaugeFraction(bmi);
-  const animPct = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.spring(animPct, {
-      toValue: pct,
-      tension: 60,
-      friction: 10,
-      useNativeDriver: false,
-    }).start();
-  }, [pct]);
-
-  return (
-    <View>
-      {/* Big value + category badge */}
-      <View style={styles.bmiHeader}>
-        <Text style={styles.bmiValue}>{bmi}</Text>
-        <View style={styles.bmiPill}>
-          <View style={[styles.bmiDot, { backgroundColor: color }]} />
-          <Text style={[styles.bmiLabel, { color }]}>{label}</Text>
-        </View>
-      </View>
-
-      {/* Arrow indicator */}
-      <View style={styles.arrowTrack}>
-        <Animated.View
-          style={[
-            styles.arrowWrapper,
-            {
-              left: animPct.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['0%', '93%'],
-              }),
-            },
-          ]}
-        >
-          {/* downward-pointing triangle via border trick */}
-          <View style={[styles.arrow, { borderTopColor: color }]} />
-        </Animated.View>
-      </View>
-
-      {/* Segmented bar */}
-      <View style={styles.gaugeBar}>
-        {SEGMENTS.map((seg, i) => (
-          <View
-            key={i}
-            style={[
-              styles.gaugeSegment,
-              { flex: seg.flex, backgroundColor: seg.color },
-              i === 0 && styles.gaugeLeft,
-              i === SEGMENTS.length - 1 && styles.gaugeRight,
-            ]}
-          />
-        ))}
-      </View>
-
-      {/* Scale labels */}
-      <View style={styles.gaugeLabels}>
-        {['10', '18.5', '25', '30', '40'].map((n) => (
-          <Text key={n} style={styles.gaugeLabel}>
-            {n}
-          </Text>
-        ))}
-      </View>
-    </View>
-  );
+function findLatest<K extends keyof BiomarkerRow>(
+  rows: BiomarkerRow[],
+  key: K,
+): BiomarkerRow[K] | null {
+  for (const row of rows) {
+    const value = row[key];
+    if (value !== null && value !== undefined) return value;
+  }
+  return null;
 }
-
-// ─── section header ──────────────────────────────────────────────────────────
-
-function SectionLabel({ title }: { title: string }) {
-  return <Text style={styles.sectionLabel}>{title.toUpperCase()}</Text>;
-}
-
-// ─── stat card (full-width, accent number) ───────────────────────────────────
-
-function BigStatCard({
-  label,
-  value,
-  unit,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  unit?: string;
-  accent?: string;
-}) {
-  return (
-    <View style={[styles.card, styles.bigStatCard]}>
-      <Text style={styles.bigStatLabel}>{label}</Text>
-      <View style={styles.bigStatRow}>
-        <Text style={[styles.bigStatValue, accent ? { color: accent } : {}]}>{value}</Text>
-        {unit && <Text style={styles.bigStatUnit}>{unit}</Text>}
-      </View>
-    </View>
-  );
-}
-
-// ─── main screen ─────────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const router = useRouter();
+  const calendarConnected = useCalendarStore((s) => s.isConnected);
   const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [biomarkers, setBiomarkers] = useState<BiomarkerRow[]>([]);
+  const [notifStatus, setNotifStatus] = useState<NotifStatus>('unknown');
 
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
+  const refreshNotifStatus = useCallback(async () => {
+    try {
+      const res = await Notifications.getPermissionsAsync();
+      const status = res.status as NotifStatus;
+      setNotifStatus(status);
+    } catch {
+      setNotifStatus('unknown');
+    }
+  }, []);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
       if (!user) {
-        setLoading(false);
+        router.replace('/(auth)/login');
         return;
       }
       setEmail(user.email ?? null);
-      const p = await getProfile(user.id);
+
+      const [p, bm] = await Promise.all([
+        getProfile(user.id),
+        getLatestBiomarkersClient(user.id, 7),
+        refreshNotifStatus(),
+      ]);
       setProfile(p);
+      setBiomarkers(bm);
+    } finally {
       setLoading(false);
     }
-    load();
-  }, []);
+  }, [router, refreshNotifStatus]);
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.loadingRoot}>
-        <ActivityIndicator size="large" color={T.forest} />
-      </SafeAreaView>
-    );
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshNotifStatus();
+    }, [refreshNotifStatus]),
+  );
+
+  async function handleNotificationsPress() {
+    if (notifStatus === 'undetermined' || notifStatus === 'unknown') {
+      try {
+        await Notifications.requestPermissionsAsync();
+      } catch {
+        // ignore
+      }
+      await refreshNotifStatus();
+      return;
+    }
+    try {
+      await Linking.openSettings();
+    } catch {
+      // ignore
+    }
   }
 
-  const displayName = profile?.name ?? email ?? 'You';
-  const bmiResult =
-    profile?.weight_kg && profile?.height_cm
-      ? calculateBmi(profile.weight_kg, profile.height_cm)
-      : null;
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await supabase.auth.signOut();
+      router.replace('/(auth)/login');
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
+  const displayName = profile?.name?.trim() || email?.split('@')[0] || 'You';
+
+  const latestGlucose = findLatest(biomarkers, 'glucose_mg_dl');
+  const latestRestingHr = findLatest(biomarkers, 'resting_hr');
+  const latestHrv = findLatest(biomarkers, 'hrv_ms');
+  const latestSleep = findLatest(biomarkers, 'sleep_hours');
+  const latestSteps = findLatest(biomarkers, 'steps');
+
+  const notifLabel =
+    notifStatus === 'granted'
+      ? 'On'
+      : notifStatus === 'denied'
+        ? 'Off'
+        : notifStatus === 'undetermined'
+          ? 'Not set'
+          : '—';
+  const notifVariant: 'success' | 'destructive' | 'secondary' =
+    notifStatus === 'granted'
+      ? 'success'
+      : notifStatus === 'denied'
+        ? 'destructive'
+        : 'secondary';
 
   return (
-    <SafeAreaView style={styles.root}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* ── Hero header ────────────────────────────────────── */}
-        <View style={styles.hero}>
-          <Avatar name={displayName} size="xl" />
-          <View style={styles.heroText}>
-            <Text style={styles.heroName}>{displayName}</Text>
-            {email && (
-              <Text style={styles.heroEmail} numberOfLines={1}>
-                {email}
-              </Text>
-            )}
-            {profile?.activity_level && (
-              <Badge variant="secondary" className="mt-2 self-start">
-                {titleCase(profile.activity_level)}
-              </Badge>
-            )}
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingVertical: 24, paddingBottom: 48 }}
+      >
+        <Text className="text-4xl font-display text-text-base mb-1">Profile</Text>
+        <Text className="text-base font-sans text-muted mb-6">
+          Your plan, body stats, and recent biomarkers
+        </Text>
+
+        {/* Account header */}
+        <Card className="mb-4">
+          <View className="flex-row items-center">
+            <Avatar name={displayName} size="xl" />
+            <View className="ml-4 flex-1">
+              {loading && !profile ? (
+                <SkeletonText lines={2} />
+              ) : (
+                <>
+                  <Text className="text-xl font-semibold text-text-base">{displayName}</Text>
+                  {email && (
+                    <Text className="text-sm text-muted mt-0.5" numberOfLines={1}>
+                      {email}
+                    </Text>
+                  )}
+                </>
+              )}
+            </View>
           </View>
+        </Card>
+
+        {/* Plan */}
+        <Card className="mb-4">
+          <Text className="text-lg font-semibold text-text-base mb-3">Your plan</Text>
+
+          {loading && !profile ? (
+            <SkeletonText lines={3} />
+          ) : profile ? (
+            <View className="gap-4">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm text-muted">Daily target</Text>
+                <Text className="text-base font-semibold text-text-base">
+                  {profile.daily_calorie_target} kcal
+                </Text>
+              </View>
+
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm text-muted">Activity</Text>
+                <Badge variant="success">
+                  {ACTIVITY_LABELS[profile.activity_level] ?? profile.activity_level}
+                </Badge>
+              </View>
+
+              <View>
+                <Text className="text-sm text-muted mb-2">Goals</Text>
+                {profile.goals?.length ? (
+                  <View className="flex-row flex-wrap gap-2">
+                    {profile.goals.map((g) => (
+                      <Chip key={g} variant="primary">
+                        {GOAL_LABELS[g] ?? g}
+                      </Chip>
+                    ))}
+                  </View>
+                ) : (
+                  <Text className="text-sm text-muted">None selected</Text>
+                )}
+              </View>
+
+              <View>
+                <Text className="text-sm text-muted mb-2">Dietary restrictions</Text>
+                {profile.dietary_restrictions?.length ? (
+                  <View className="flex-row flex-wrap gap-2">
+                    {profile.dietary_restrictions.map((r) => (
+                      <Chip key={r}>{RESTRICTION_LABELS[r] ?? r}</Chip>
+                    ))}
+                  </View>
+                ) : (
+                  <Text className="text-sm text-muted">None</Text>
+                )}
+              </View>
+            </View>
+          ) : (
+            <View>
+              <Text className="text-sm text-muted mb-3">
+                You haven&apos;t finished onboarding yet.
+              </Text>
+              <Button onPress={() => router.push('/onboarding/step1-goals')}>
+                Finish onboarding
+              </Button>
+            </View>
+          )}
+        </Card>
+
+        {/* Body */}
+        {profile && (
+          <Card className="mb-4">
+            <Text className="text-lg font-semibold text-text-base mb-3">Body</Text>
+            <View>
+              <ListItem
+                title="Age"
+                trailing={
+                  <Text className="text-sm text-text-base">
+                    {profile.age != null ? `${profile.age}` : '—'}
+                  </Text>
+                }
+              />
+              <ListItem
+                title="Sex"
+                trailing={
+                  <Text className="text-sm text-text-base">
+                    {profile.sex ? SEX_LABELS[profile.sex] : '—'}
+                  </Text>
+                }
+              />
+              <ListItem
+                title="Height"
+                trailing={
+                  <Text className="text-sm text-text-base">
+                    {profile.height_cm != null ? `${profile.height_cm} cm` : '—'}
+                  </Text>
+                }
+              />
+              <ListItem
+                title="Weight"
+                trailing={
+                  <Text className="text-sm text-text-base">
+                    {profile.weight_kg != null ? `${profile.weight_kg} kg` : '—'}
+                  </Text>
+                }
+                className="border-b-0"
+              />
+            </View>
+          </Card>
+        )}
+
+        {/* Biomarkers */}
+        <View className="mb-2 flex-row items-center justify-between">
+          <Text className="text-lg font-semibold text-text-base">Biomarkers</Text>
+          {biomarkers.length > 0 && (
+            <Text className="text-xs text-muted">
+              Updated {formatRecordedAt(biomarkers[0].recorded_at)}
+            </Text>
+          )}
         </View>
 
-        <View style={styles.dividerLine} />
-
-        {/* ── Daily target ────────────────────────────────────── */}
-        {!!profile?.daily_calorie_target && (
-          <>
-            <SectionLabel title="Daily Target" />
-            <BigStatCard
-              label="Calorie goal"
-              value={profile.daily_calorie_target.toLocaleString()}
-              unit="kcal"
-              accent={T.forest}
-            />
-          </>
-        )}
-
-        {/* ── Body stats ──────────────────────────────────────── */}
-        {(profile?.height_cm || profile?.weight_kg || profile?.age) && (
-          <>
-            <SectionLabel title="Body Stats" />
-            <View style={styles.card}>
-              {!!profile!.height_cm && (
-                <ListItem
-                  title="Height"
-                  trailing={<Text style={styles.statValue}>{profile!.height_cm} cm</Text>}
-                />
-              )}
-              {!!profile!.weight_kg && (
-                <ListItem
-                  title="Weight"
-                  trailing={<Text style={styles.statValue}>{profile!.weight_kg} kg</Text>}
-                />
-              )}
-              {!!profile!.age && (
-                <ListItem
-                  title="Age"
-                  trailing={<Text style={styles.statValue}>{profile!.age} yrs</Text>}
-                />
-              )}
-              {profile!.sex && (
-                <ListItem
-                  title="Sex"
-                  trailing={<Text style={styles.statValue}>{titleCase(profile!.sex)}</Text>}
-                />
-              )}
-            </View>
-          </>
-        )}
-
-        {/* ── Goals ───────────────────────────────────────────── */}
-        {!!profile?.goals?.length && (
-          <>
-            <SectionLabel title="Goals" />
-            <View style={[styles.card, styles.chipCard]}>
-              {profile.goals.map((g) => (
-                <Badge key={g} variant="default">
-                  {titleCase(g)}
-                </Badge>
-              ))}
-            </View>
-          </>
-        )}
-
-        {/* ── Dietary restrictions ────────────────────────────── */}
-        {!!profile?.dietary_restrictions?.length && (
-          <>
-            <SectionLabel title="Dietary Restrictions" />
-            <View style={[styles.card, styles.chipCard]}>
-              {profile.dietary_restrictions.map((r) => (
-                <Badge key={r} variant="warning">
-                  {titleCase(r)}
-                </Badge>
-              ))}
-            </View>
-          </>
-        )}
-
-        {/* ── BMI ─────────────────────────────────────────────── */}
-        {bmiResult && (
-          <>
-            <SectionLabel title="Body Mass Index" />
-            <View style={[styles.card, styles.bmiCard]}>
-              <BmiGauge bmi={bmiResult.value} color={bmiResult.color} label={bmiResult.label} />
-              <Text style={styles.bmiCaption}>
-                Based on {profile!.height_cm} cm height · {profile!.weight_kg} kg weight
-              </Text>
-            </View>
-          </>
-        )}
-
-        {/* ── Empty state ─────────────────────────────────────── */}
-        {!profile && (
-          <View style={[styles.card, styles.emptyCard]}>
-            <Text style={styles.emptyText}>
-              No profile data yet.{'\n'}Complete onboarding to see your stats here.
-            </Text>
+        {loading && biomarkers.length === 0 ? (
+          <View className="flex-row flex-wrap gap-3 mb-4">
+            <Skeleton className="h-24 flex-1 min-w-[45%]" />
+            <Skeleton className="h-24 flex-1 min-w-[45%]" />
+            <Skeleton className="h-24 flex-1 min-w-[45%]" />
+            <Skeleton className="h-24 flex-1 min-w-[45%]" />
           </View>
+        ) : biomarkers.length === 0 ? (
+          <Card className="mb-4">
+            <Text className="text-sm text-muted">
+              No biomarkers yet. Connect a wearable or log readings to start tracking glucose,
+              heart rate, sleep, and steps.
+            </Text>
+          </Card>
+        ) : (
+          <>
+            <View className="flex-row flex-wrap gap-3 mb-3">
+              <View className="flex-1 min-w-[45%]">
+                <StatCard
+                  label="Glucose"
+                  value={latestGlucose != null ? Number(latestGlucose) : '—'}
+                  suffix={latestGlucose != null ? ' mg/dL' : undefined}
+                />
+              </View>
+              <View className="flex-1 min-w-[45%]">
+                <StatCard
+                  label="Resting HR"
+                  value={latestRestingHr != null ? Number(latestRestingHr) : '—'}
+                  suffix={latestRestingHr != null ? ' bpm' : undefined}
+                />
+              </View>
+              <View className="flex-1 min-w-[45%]">
+                <StatCard
+                  label="HRV"
+                  value={latestHrv != null ? Number(latestHrv) : '—'}
+                  suffix={latestHrv != null ? ' ms' : undefined}
+                />
+              </View>
+              <View className="flex-1 min-w-[45%]">
+                <StatCard
+                  label="Sleep"
+                  value={latestSleep != null ? Number(latestSleep) : '—'}
+                  suffix={latestSleep != null ? ' h' : undefined}
+                />
+              </View>
+              <View className="flex-1 min-w-[45%]">
+                <StatCard
+                  label="Steps"
+                  value={latestSteps != null ? Number(latestSteps) : '—'}
+                />
+              </View>
+            </View>
+
+            <Card className="mb-4">
+              <Text className="text-sm font-semibold text-text-base mb-2">Recent entries</Text>
+              <View>
+                {biomarkers.map((row, idx) => {
+                  const parts: string[] = [];
+                  if (row.glucose_mg_dl != null)
+                    parts.push(`${row.glucose_mg_dl} mg/dL`);
+                  if (row.resting_hr != null) parts.push(`${row.resting_hr} bpm`);
+                  if (row.hrv_ms != null) parts.push(`${row.hrv_ms} ms`);
+                  if (row.sleep_hours != null) parts.push(`${row.sleep_hours} h sleep`);
+                  if (row.steps != null) parts.push(`${row.steps} steps`);
+                  const subtitle = parts.length ? parts.join(' · ') : 'No values';
+                  return (
+                    <ListItem
+                      key={row.id}
+                      title={formatRecordedAt(row.recorded_at)}
+                      subtitle={subtitle}
+                      trailing={
+                        row.source ? (
+                          <Badge variant="secondary">{row.source}</Badge>
+                        ) : undefined
+                      }
+                      className={idx === biomarkers.length - 1 ? 'border-b-0' : ''}
+                    />
+                  );
+                })}
+              </View>
+            </Card>
+          </>
         )}
+
+        {/* Settings */}
+        <Card className="mb-4">
+          <Text className="text-lg font-semibold text-text-base mb-2">Settings</Text>
+          <View>
+            <ListItem
+              title="Notifications"
+              subtitle={
+                notifStatus === 'undetermined' || notifStatus === 'unknown'
+                  ? 'Tap to enable push notifications'
+                  : notifStatus === 'denied'
+                    ? 'Disabled — open OS settings to allow'
+                    : 'Push notifications are on'
+              }
+              trailing={<Badge variant={notifVariant}>{notifLabel}</Badge>}
+              onPress={handleNotificationsPress}
+            />
+            <ListItem
+              title="Calendar"
+              subtitle={
+                calendarConnected
+                  ? 'Google Calendar connected'
+                  : 'Connect Google Calendar to plan around your day'
+              }
+              trailing={
+                <Badge variant={calendarConnected ? 'success' : 'secondary'}>
+                  {calendarConnected ? 'Connected' : 'Not connected'}
+                </Badge>
+              }
+              onPress={() => router.push('/(tabs)/calendar')}
+            />
+            <ListItem
+              title="Edit profile"
+              subtitle="Update goals, body, and activity"
+              trailing={<Text className="text-muted text-base">›</Text>}
+              onPress={() => router.push('/onboarding/step1-goals')}
+              className="border-b-0"
+            />
+          </View>
+        </Card>
+
+        {/* Sign out */}
+        <Button
+          variant="destructive"
+          onPress={handleSignOut}
+          loading={signingOut}
+          disabled={signingOut}
+          className="mt-2"
+        >
+          {signingOut ? 'Signing out…' : 'Sign out'}
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-// ─── styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: T.bg },
-  loadingRoot: { flex: 1, backgroundColor: T.bg, alignItems: 'center', justifyContent: 'center' },
-  scroll: { paddingBottom: 56 },
-
-  // hero
-  hero: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    paddingHorizontal: 20,
-    paddingTop: 28,
-    paddingBottom: 24,
-  },
-  heroText: { flex: 1 },
-  heroName: {
-    fontFamily: 'Syne_700Bold',
-    fontSize: 24,
-    color: T.text,
-    letterSpacing: -0.3,
-  },
-  heroEmail: {
-    fontFamily: 'PlusJakartaSans_400Regular',
-    fontSize: 13,
-    color: T.muted,
-    marginTop: 2,
-  },
-
-  dividerLine: { height: 1, backgroundColor: T.border, marginHorizontal: 20, marginBottom: 20 },
-
-  // section label
-  sectionLabel: {
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    fontSize: 10,
-    letterSpacing: 1.2,
-    color: T.muted,
-    paddingHorizontal: 20,
-    marginBottom: 8,
-    marginTop: 4,
-  },
-
-  // generic card
-  card: {
-    backgroundColor: T.surface,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: T.border,
-    marginHorizontal: 20,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-
-  // bmi card
-  bmiCard: { padding: 20 },
-  bmiHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  bmiValue: {
-    fontFamily: 'Syne_800ExtraBold',
-    fontSize: 36,
-    color: T.text,
-    lineHeight: 40,
-  },
-  bmiPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: T.surfaceDeep,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  bmiDot: { width: 8, height: 8, borderRadius: 4 },
-  bmiLabel: { fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 13 },
-  bmiCaption: {
-    fontFamily: 'PlusJakartaSans_400Regular',
-    fontSize: 11,
-    color: T.muted,
-    marginTop: 10,
-    lineHeight: 16,
-  },
-
-  // gauge
-  arrowTrack: { height: 14, position: 'relative', marginBottom: 4 },
-  arrowWrapper: { position: 'absolute', alignItems: 'center' },
-  arrow: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 9,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    // borderTopColor set inline to match category
-  },
-  gaugeBar: {
-    flexDirection: 'row',
-    height: 10,
-    borderRadius: 6,
-    overflow: 'hidden',
-    gap: 1.5,
-  },
-  gaugeSegment: { height: '100%' },
-  gaugeLeft: { borderTopLeftRadius: 6, borderBottomLeftRadius: 6 },
-  gaugeRight: { borderTopRightRadius: 6, borderBottomRightRadius: 6 },
-  gaugeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 6,
-  },
-  gaugeLabel: {
-    fontFamily: 'PlusJakartaSans_400Regular',
-    fontSize: 10,
-    color: T.muted,
-  },
-
-  // big stat card
-  bigStatCard: { padding: 20 },
-  bigStatLabel: {
-    fontFamily: 'PlusJakartaSans_500Medium',
-    fontSize: 12,
-    color: T.muted,
-    letterSpacing: 0.3,
-    marginBottom: 4,
-  },
-  bigStatRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  bigStatValue: {
-    fontFamily: 'Syne_700Bold',
-    fontSize: 40,
-    color: T.text,
-    lineHeight: 44,
-  },
-  bigStatUnit: {
-    fontFamily: 'PlusJakartaSans_400Regular',
-    fontSize: 14,
-    color: T.muted,
-    marginBottom: 6,
-  },
-
-  // body stats value
-  statValue: {
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    fontSize: 13,
-    color: T.text,
-  },
-
-  // chip card
-  chipCard: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    padding: 16,
-  },
-
-  // empty state
-  emptyCard: { padding: 32, alignItems: 'center' },
-  emptyText: {
-    fontFamily: 'PlusJakartaSans_400Regular',
-    fontSize: 13,
-    color: T.muted,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});

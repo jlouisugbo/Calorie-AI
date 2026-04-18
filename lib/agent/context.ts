@@ -1,4 +1,4 @@
-import { getProfileServer, type UserProfile } from '@/lib/supabase/profile';
+import { getProfileServer, type UserProfile } from '@/lib/supabase/profile-server';
 import { getLatestBiomarkers, type BiomarkerRow } from '@/lib/supabase/biomarkers';
 import { getUserState } from '@/lib/supabase/notifications';
 
