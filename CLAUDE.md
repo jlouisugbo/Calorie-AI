@@ -16,7 +16,7 @@
 
 **You must match the Forest template.** All new UI in **`components/ui/`** must use the **forest / cream / beige** system defined in **`global.css`**: semantic tokens (`bg-background`, `bg-primary`, `text-foreground`, `border-primary`, etc.) and the palette described in the **Colors** section of this file — **no one-off hex palettes** unless you are deliberately mapping them into `global.css` first.
 
-**Summary:** *Reuse `components/ui/` → promote new primitives there → theme everything from `global.css` (Forest).* **Ignoring this wastes review time and breaks visual consistency.**
+**Summary:** _Reuse `components/ui/` → promote new primitives there → theme everything from `global.css` (Forest)._ **Ignoring this wastes review time and breaks visual consistency.**
 
 ---
 
@@ -290,8 +290,6 @@ GOOGLE_CALENDAR_CLIENT_SECRET=
 **Critical**: `GOOGLE_PLACES_API_KEY` and `LOGMEAL_API_KEY` must NOT have the `EXPO_PUBLIC_` prefix — they are used only in `app/api/` routes (server-side). Putting them in `EXPO_PUBLIC_` would expose them in the client bundle.
 
 **Build-time baked in**: Changing `.env` requires restarting `npx expo start`. For production, set in EAS secrets.
-
-
 
 ---
 
