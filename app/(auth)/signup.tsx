@@ -36,8 +36,8 @@ function validate(form: FormState): FieldErrors {
   return errors;
 }
 
-const DEMO_EMAIL = 'demo@calorie-ai.com';
-const DEMO_PASSWORD = 'demo1234';
+const DEMO_EMAIL = 'demo@cal.com';
+const DEMO_PASSWORD = 'demo';
 
 export default function Signup() {
   const router = useRouter();
