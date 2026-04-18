@@ -4,7 +4,12 @@
 
 @layer base {
   :root {
-    /* ─── Red ─────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════════
+       FULL COLOR PALETTE — CSS custom properties
+       Usage: var(--color-red-500), color-[var(--color-amber-400)], etc.
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── Red ─────────────────────────────────────────────────── */
     --color-red-100: #fee2e2;
     --color-red-200: #fecaca;
     --color-red-300: #fca5a5;
@@ -15,7 +20,7 @@
     --color-red-800: #991b1b;
     --color-red-900: #7f1d1d;
 
-    /* ─── Orange ──────────────────────────────── */
+    /* ── Orange ──────────────────────────────────────────────── */
     --color-orange-100: #ffedd5;
     --color-orange-200: #fed7aa;
     --color-orange-300: #fdba74;
@@ -26,7 +31,18 @@
     --color-orange-800: #9a3412;
     --color-orange-900: #7c2d12;
 
-    /* ─── Yellow ──────────────────────────────── */
+    /* ── Amber ───────────────────────────────────────────────── */
+    --color-amber-100: #fef3c7;
+    --color-amber-200: #fde68a;
+    --color-amber-300: #fcd34d;
+    --color-amber-400: #fbbf24;
+    --color-amber-500: #f59e0b;
+    --color-amber-600: #d97706;
+    --color-amber-700: #b45309;
+    --color-amber-800: #92400e;
+    --color-amber-900: #78350f;
+
+    /* ── Yellow ──────────────────────────────────────────────── */
     --color-yellow-100: #fef9c3;
     --color-yellow-200: #fef08a;
     --color-yellow-300: #fde047;
@@ -37,7 +53,18 @@
     --color-yellow-800: #854d0e;
     --color-yellow-900: #713f12;
 
-    /* ─── Green ───────────────────────────────── */
+    /* ── Lime ────────────────────────────────────────────────── */
+    --color-lime-100: #ecfccb;
+    --color-lime-200: #d9f99d;
+    --color-lime-300: #bef264;
+    --color-lime-400: #a3e635;
+    --color-lime-500: #84cc16;
+    --color-lime-600: #65a30d;
+    --color-lime-700: #4d7c0f;
+    --color-lime-800: #3f6212;
+    --color-lime-900: #365314;
+
+    /* ── Green ───────────────────────────────────────────────── */
     --color-green-100: #dcfce7;
     --color-green-200: #bbf7d0;
     --color-green-300: #86efac;
@@ -48,7 +75,7 @@
     --color-green-800: #166534;
     --color-green-900: #14532d;
 
-    /* ─── Teal ────────────────────────────────── */
+    /* ── Teal ────────────────────────────────────────────────── */
     --color-teal-100: #ccfbf1;
     --color-teal-200: #99f6e4;
     --color-teal-300: #5eead4;
@@ -59,7 +86,18 @@
     --color-teal-800: #115e59;
     --color-teal-900: #134e4a;
 
-    /* ─── Blue ────────────────────────────────── */
+    /* ── Cyan ────────────────────────────────────────────────── */
+    --color-cyan-100: #cffafe;
+    --color-cyan-200: #a5f3fc;
+    --color-cyan-300: #67e8f9;
+    --color-cyan-400: #22d3ee;
+    --color-cyan-500: #06b6d4;
+    --color-cyan-600: #0891b2;
+    --color-cyan-700: #0e7490;
+    --color-cyan-800: #155e75;
+    --color-cyan-900: #164e63;
+
+    /* ── Blue ────────────────────────────────────────────────── */
     --color-blue-100: #dbeafe;
     --color-blue-200: #bfdbfe;
     --color-blue-300: #93c5fd;
@@ -70,7 +108,7 @@
     --color-blue-800: #1e40af;
     --color-blue-900: #1e3a8a;
 
-    /* ─── Indigo ──────────────────────────────── */
+    /* ── Indigo ──────────────────────────────────────────────── */
     --color-indigo-100: #e0e7ff;
     --color-indigo-200: #c7d2fe;
     --color-indigo-300: #a5b4fc;
@@ -81,7 +119,7 @@
     --color-indigo-800: #3730a3;
     --color-indigo-900: #312e81;
 
-    /* ─── Violet ──────────────────────────────── */
+    /* ── Violet ──────────────────────────────────────────────── */
     --color-violet-100: #ede9fe;
     --color-violet-200: #ddd6fe;
     --color-violet-300: #c4b5fd;
@@ -92,7 +130,7 @@
     --color-violet-800: #5b21b6;
     --color-violet-900: #4c1d95;
 
-    /* ─── Purple ──────────────────────────────── */
+    /* ── Purple ──────────────────────────────────────────────── */
     --color-purple-100: #f3e8ff;
     --color-purple-200: #e9d5ff;
     --color-purple-300: #d8b4fe;
@@ -103,8 +141,19 @@
     --color-purple-800: #6b21a8;
     --color-purple-900: #581c87;
 
-    /* ─── Gray / White / Black ────────────────── */
-    --color-gray-50: #f9fafb;
+    /* ── Pink ────────────────────────────────────────────────── */
+    --color-pink-100: #fce7f3;
+    --color-pink-200: #fbcfe8;
+    --color-pink-300: #f9a8d4;
+    --color-pink-400: #f472b6;
+    --color-pink-500: #ec4899;
+    --color-pink-600: #db2777;
+    --color-pink-700: #be185d;
+    --color-pink-800: #9d174d;
+    --color-pink-900: #831843;
+
+    /* ── Gray / Neutrals ─────────────────────────────────────── */
+    --color-gray-50:  #f9fafb;
     --color-gray-100: #f3f4f6;
     --color-gray-200: #e5e7eb;
     --color-gray-300: #d1d5db;
@@ -115,74 +164,114 @@
     --color-gray-800: #1f2937;
     --color-gray-900: #111827;
     --color-gray-950: #030712;
-    --color-white: #ffffff;
-    --color-black: #000000;
+    --color-white:    #ffffff;
+    --color-black:    #000000;
 
-    /* ─── Semantic aliases (light mode) ──────── */
-    --color-primary: var(--color-indigo-600);
+    /* ── Font variables (set by useFonts in _layout.tsx) ────── */
+    /* --font-sans        → Plus Jakarta Sans 400  body / default  */
+    /* --font-medium      → Plus Jakarta Sans 500  labels          */
+    /* --font-semibold    → Plus Jakarta Sans 600  subheadings     */
+    /* --font-body-bold   → Plus Jakarta Sans 700  emphasized body */
+    /* --font-display     → Syne 700               screen titles   */
+    /* --font-display-xl  → Syne 800               hero text       */
+    /* --font-mono        → JetBrains Mono 400     AI output/code  */
+    --font-sans:        PlusJakartaSans_400Regular;
+    --font-medium:      PlusJakartaSans_500Medium;
+    --font-semibold:    PlusJakartaSans_600SemiBold;
+    --font-body-bold:   PlusJakartaSans_700Bold;
+    --font-display:     Syne_700Bold;
+    --font-display-xl:  Syne_800ExtraBold;
+    --font-mono:        JetBrainsMono_400Regular;
+
+    /* ── Semantic tokens (light mode) ───────────────────────── */
+    --color-primary:            var(--color-indigo-600);
     --color-primary-foreground: var(--color-white);
-    --color-background: var(--color-white);
-    --color-surface: var(--color-gray-50);
-    --color-surface-elevated: var(--color-white);
-    --color-border: var(--color-gray-200);
-    --color-text: var(--color-gray-900);
-    --color-text-secondary: var(--color-gray-500);
-    --color-muted: var(--color-gray-400);
-    --color-destructive: var(--color-red-600);
-    --color-success: var(--color-green-600);
-    --color-warning: var(--color-yellow-500);
+    --color-background:         var(--color-white);
+    --color-foreground:         var(--color-gray-900);
+    --color-card:               var(--color-white);
+    --color-card-foreground:    var(--color-gray-900);
+    --color-surface:            var(--color-gray-50);
+    --color-surface-elevated:   var(--color-white);
+    --color-muted:              var(--color-gray-100);
+    --color-muted-foreground:   var(--color-gray-500);
+    --color-accent:             var(--color-gray-100);
+    --color-accent-foreground:  var(--color-gray-900);
+    --color-border:             var(--color-gray-200);
+    --color-input:              var(--color-gray-200);
+    --color-ring:               var(--color-gray-400);
+    --color-destructive:        var(--color-red-600);
+    --color-success:            var(--color-green-600);
+    --color-warning:            var(--color-yellow-500);
 
-    /* ─── Typography ──────────────────────────── */
-    --font-sans: PlusJakartaSans_400Regular;
-    --font-medium: PlusJakartaSans_500Medium;
-    --font-semibold: PlusJakartaSans_600SemiBold;
-    --font-body-bold: PlusJakartaSans_700Bold;
-    --font-display: Syne_700Bold;
-    --font-display-xl: Syne_800ExtraBold;
-    --font-mono: JetBrainsMono_400Regular;
+    /* ── Chart tokens ────────────────────────────────────────── */
+    --color-chart-1: var(--color-amber-500);   /* amber  */
+    --color-chart-2: var(--color-teal-500);    /* teal   */
+    --color-chart-3: var(--color-blue-700);    /* blue   */
+    --color-chart-4: var(--color-lime-500);    /* lime   */
+    --color-chart-5: var(--color-yellow-500);  /* yellow */
 
-    /* ─── Border radius ───────────────────────── */
-    --radius-xs: 4px;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    --radius-2xl: 24px;
+    /* ── Radius scale (px — NativeWind resolves at build time) ── */
+    --radius-xs:   4px;
+    --radius-sm:   6px;
+    --radius-md:   8px;
+    --radius-lg:   12px;
+    --radius-xl:   16px;
+    --radius-2xl:  24px;
+    --radius-3xl:  32px;
+    --radius-4xl:  40px;
     --radius-full: 9999px;
 
-    /* ─── Spacing scale ───────────────────────── */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-5: 20px;
-    --space-6: 24px;
-    --space-8: 32px;
+    /* ── Spacing scale ───────────────────────────────────────── */
+    --space-1:  4px;
+    --space-2:  8px;
+    --space-3:  12px;
+    --space-4:  16px;
+    --space-5:  20px;
+    --space-6:  24px;
+    --space-8:  32px;
     --space-10: 40px;
     --space-12: 48px;
     --space-16: 64px;
 
-    /* ─── Shadow ──────────────────────────────── */
+    /* ── Shadows ─────────────────────────────────────────────── */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.10);
+
+    /* ── Animation durations ─────────────────────────────────── */
+    --duration-fast:   150ms;
+    --duration-normal: 300ms;
+    --duration-slow:   500ms;
   }
 
-  /* ─── Dark mode overrides ───────────────────── */
+  /* ── Dark mode semantic overrides ───────────────────────── */
   @media (prefers-color-scheme: dark) {
     :root {
-      --color-primary: var(--color-indigo-400);
+      --color-primary:            var(--color-indigo-400);
       --color-primary-foreground: var(--color-gray-950);
-      --color-background: var(--color-gray-950);
-      --color-surface: var(--color-gray-900);
-      --color-surface-elevated: var(--color-gray-800);
-      --color-border: var(--color-gray-700);
-      --color-text: var(--color-gray-50);
-      --color-text-secondary: var(--color-gray-400);
-      --color-muted: var(--color-gray-600);
-      --color-destructive: var(--color-red-400);
-      --color-success: var(--color-green-400);
-      --color-warning: var(--color-yellow-400);
+      --color-background:         var(--color-gray-950);
+      --color-foreground:         var(--color-gray-50);
+      --color-card:               var(--color-gray-900);
+      --color-card-foreground:    var(--color-gray-50);
+      --color-surface:            var(--color-gray-900);
+      --color-surface-elevated:   var(--color-gray-800);
+      --color-muted:              var(--color-gray-800);
+      --color-muted-foreground:   var(--color-gray-400);
+      --color-accent:             var(--color-gray-800);
+      --color-accent-foreground:  var(--color-gray-50);
+      --color-border:             var(--color-gray-700);
+      --color-input:              var(--color-gray-700);
+      --color-ring:               var(--color-gray-600);
+      --color-destructive:        var(--color-red-400);
+      --color-success:            var(--color-green-400);
+      --color-warning:            var(--color-yellow-400);
+
+      /* ── Chart tokens (dark) ─────────────────────────────── */
+      --color-chart-1: var(--color-indigo-400);
+      --color-chart-2: var(--color-green-400);
+      --color-chart-3: var(--color-yellow-400);
+      --color-chart-4: var(--color-violet-400);
+      --color-chart-5: var(--color-red-400);
     }
   }
 }
