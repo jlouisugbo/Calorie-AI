@@ -9,20 +9,20 @@ You are a senior engineer who knows the baseplate-web codebase deeply. When give
 
 Before planning any new files, check what baseplate already provides:
 
-| Need | Already exists |
-|------|---------------|
-| Auth (login, signup, OAuth, sessions) | ✓ `app/(auth)/`, `middleware.ts`, `components/auth/auth-form.tsx` |
-| AI chat streaming | ✓ `app/api/chat/route.ts` + `components/chat/chat-interface.tsx` (fork, don't edit) |
-| 50+ UI components | ✓ `components/ui/` — button, dialog, sheet, card, tabs, command, scroll-area, etc. |
-| Animation system | ✓ `lib/animations.ts` — fadeUp, fadeIn, scaleIn, staggerContainer, pageTransition, popIn |
-| State management | ✓ Zustand (`lib/store.ts`) for global, TanStack Query for server state |
-| Forms + validation | ✓ react-hook-form + zod (already installed) |
-| Charts | ✓ `components/graphs/metric-charts.tsx` — area, bar, line, pie |
-| Node/edge diagrams | ✓ `components/graphs/agent-flow.tsx` (React Flow) |
-| Confetti / effects | ✓ `components/effects/confetti.tsx`, `gradient-mesh.tsx`, `typing-text.tsx` |
-| Page transitions | ✓ `components/motion/page-transition.tsx` |
-| Toast notifications | ✓ Sonner — already in layout, call `toast()` directly |
-| Sidebar shell | ✓ `components/app-sidebar.tsx` + `components/ui/sidebar.tsx` |
+| Need                                  | Already exists                                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Auth (login, signup, OAuth, sessions) | ✓ `app/(auth)/`, `middleware.ts`, `components/auth/auth-form.tsx`                        |
+| AI chat streaming                     | ✓ `app/api/chat/route.ts` + `components/chat/chat-interface.tsx` (fork, don't edit)      |
+| 50+ UI components                     | ✓ `components/ui/` — button, dialog, sheet, card, tabs, command, scroll-area, etc.       |
+| Animation system                      | ✓ `lib/animations.ts` — fadeUp, fadeIn, scaleIn, staggerContainer, pageTransition, popIn |
+| State management                      | ✓ Zustand (`lib/store.ts`) for global, TanStack Query for server state                   |
+| Forms + validation                    | ✓ react-hook-form + zod (already installed)                                              |
+| Charts                                | ✓ `components/graphs/metric-charts.tsx` — area, bar, line, pie                           |
+| Node/edge diagrams                    | ✓ `components/graphs/agent-flow.tsx` (React Flow)                                        |
+| Confetti / effects                    | ✓ `components/effects/confetti.tsx`, `gradient-mesh.tsx`, `typing-text.tsx`              |
+| Page transitions                      | ✓ `components/motion/page-transition.tsx`                                                |
+| Toast notifications                   | ✓ Sonner — already in layout, call `toast()` directly                                    |
+| Sidebar shell                         | ✓ `components/app-sidebar.tsx` + `components/ui/sidebar.tsx`                             |
 
 ## Step 2: Classify remaining work
 
@@ -57,6 +57,7 @@ Use [CREATE], [FORK], [MODIFY], [ADD], [INSTALL] tags.
 ## Step 5: Time estimate
 
 For hackathon planning, time-box in 2-hour blocks:
+
 - Small: 1 block (< 2hrs)
 - Medium: 2 blocks (2–4hrs)
 - Large: 3+ blocks (4hrs+)
