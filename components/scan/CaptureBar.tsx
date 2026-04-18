@@ -12,34 +12,52 @@ interface CaptureBarProps {
 
 export function CaptureBar({ onImagePicked, disabled = false, className = '' }: CaptureBarProps) {
   const takePhoto = useCallback(async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      toast.error('Camera permission is required to scan meals');
-      return;
-    }
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        toast.error('Camera permission is required to scan meals');
+        return;
+      }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      onImagePicked(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        onImagePicked(result.assets[0].uri);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to open camera';
+      console.error('[CaptureBar] takePhoto error:', err);
+      toast.error(message);
     }
   }, [onImagePicked]);
 
   const pickFromLibrary = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        toast.error('Photo library permission is required');
+        return;
+      }
 
-    if (!result.canceled && result.assets[0]) {
-      onImagePicked(result.assets[0].uri);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        onImagePicked(result.assets[0].uri);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to open photo library';
+      console.error('[CaptureBar] pickFromLibrary error:', err);
+      toast.error(message);
     }
   }, [onImagePicked]);
 
