@@ -167,6 +167,46 @@
     --color-white: #ffffff;
     --color-black: #000000;
 
+    /* ═══════════════════════════════════════════════════════════
+       FOREST PALETTE — cream · beige · deep greens · olive
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── Cream ───────────────────────────────────────────────── */
+    --color-cream-50:  #fefcf5;
+    --color-cream-100: #f9f4e8;
+    --color-cream-200: #f2e9d0;
+    --color-cream-300: #e8d9b4;
+    --color-cream-400: #d9c48e;
+    --color-cream-500: #c8ae68;
+
+    /* ── Beige ───────────────────────────────────────────────── */
+    --color-beige-50:  #faf7f0;
+    --color-beige-100: #f4edd9;
+    --color-beige-200: #e9dbbe;
+    --color-beige-300: #d9c49a;
+    --color-beige-400: #c4a872;
+    --color-beige-500: #ad8d50;
+
+    /* ── Forest green ────────────────────────────────────────── */
+    --color-forest-50:  #eef4e8;
+    --color-forest-100: #d2e6c0;
+    --color-forest-200: #a9cc8a;
+    --color-forest-300: #7bae56;
+    --color-forest-400: #578c34;
+    --color-forest-500: #3c6e21;
+    --color-forest-600: #2e561a;
+    --color-forest-700: #213e13;
+    --color-forest-800: #16280d;
+    --color-forest-900: #0d1808;
+
+    /* ── Olive ───────────────────────────────────────────────── */
+    --color-olive-100: #e8ecd8;
+    --color-olive-200: #cdd4ae;
+    --color-olive-300: #aeba82;
+    --color-olive-400: #8c9f58;
+    --color-olive-500: #6b7d38;
+    --color-olive-600: #4f5e29;
+
     /* ── Font variables (set by useFonts in _layout.tsx) ────── */
     /* --font-sans        → Plus Jakarta Sans 400  body / default  */
     /* --font-medium      → Plus Jakarta Sans 500  labels          */
@@ -183,32 +223,32 @@
     --font-display-xl: Syne_800ExtraBold;
     --font-mono: JetBrainsMono_400Regular;
 
-    /* ── Semantic tokens (light mode) ───────────────────────── */
-    --color-primary: var(--color-indigo-600);
-    --color-primary-foreground: var(--color-white);
-    --color-background: var(--color-white);
-    --color-foreground: var(--color-gray-900);
-    --color-card: var(--color-white);
-    --color-card-foreground: var(--color-gray-900);
-    --color-surface: var(--color-gray-50);
-    --color-surface-elevated: var(--color-white);
-    --color-muted: var(--color-gray-100);
-    --color-muted-foreground: var(--color-gray-500);
-    --color-accent: var(--color-gray-100);
-    --color-accent-foreground: var(--color-gray-900);
-    --color-border: var(--color-gray-200);
-    --color-input: var(--color-gray-200);
-    --color-ring: var(--color-gray-400);
-    --color-destructive: var(--color-red-600);
-    --color-success: var(--color-green-600);
-    --color-warning: var(--color-yellow-500);
+    /* ── Semantic tokens (light — forest day) ───────────────── */
+    --color-primary:            var(--color-forest-500);
+    --color-primary-foreground: var(--color-cream-50);
+    --color-background:         var(--color-cream-100);
+    --color-foreground:         var(--color-forest-800);
+    --color-card:               var(--color-cream-50);
+    --color-card-foreground:    var(--color-forest-800);
+    --color-surface:            var(--color-beige-100);
+    --color-surface-elevated:   var(--color-cream-50);
+    --color-muted:              var(--color-beige-200);
+    --color-muted-foreground:   var(--color-olive-500);
+    --color-accent:             var(--color-forest-100);
+    --color-accent-foreground:  var(--color-forest-700);
+    --color-border:             var(--color-beige-300);
+    --color-input:              var(--color-beige-200);
+    --color-ring:               var(--color-forest-400);
+    --color-destructive:        var(--color-red-600);
+    --color-success:            var(--color-forest-500);
+    --color-warning:            var(--color-amber-600);
 
-    /* ── Chart tokens ────────────────────────────────────────── */
-    --color-chart-1: var(--color-amber-500); /* amber  */
-    --color-chart-2: var(--color-teal-500); /* teal   */
-    --color-chart-3: var(--color-blue-700); /* blue   */
-    --color-chart-4: var(--color-lime-500); /* lime   */
-    --color-chart-5: var(--color-yellow-500); /* yellow */
+    /* ── Chart tokens (forest palette) ──────────────────────── */
+    --color-chart-1: var(--color-forest-500);  /* deep green  */
+    --color-chart-2: var(--color-olive-500);   /* olive       */
+    --color-chart-3: var(--color-amber-600);   /* warm amber  */
+    --color-chart-4: var(--color-forest-300);  /* sage        */
+    --color-chart-5: var(--color-cream-400);   /* warm tan    */
 
     /* ── Radius scale (px — NativeWind resolves at build time) ── */
     --radius-xs: 4px;
@@ -233,10 +273,10 @@
     --space-12: 48px;
     --space-16: 64px;
 
-    /* ── Shadows ─────────────────────────────────────────────── */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    /* ── Shadows (warmer tint for cream backgrounds) ─────────── */
+    --shadow-sm: 0 1px 2px rgba(44, 56, 28, 0.06);
+    --shadow-md: 0 4px 8px rgba(44, 56, 28, 0.09);
+    --shadow-lg: 0 10px 20px rgba(44, 56, 28, 0.12);
 
     /* ── Animation durations ─────────────────────────────────── */
     --duration-fast: 150ms;
@@ -244,34 +284,34 @@
     --duration-slow: 500ms;
   }
 
-  /* ── Dark mode semantic overrides ───────────────────────── */
+  /* ── Dark mode semantic overrides (forest night) ─────────── */
   @media (prefers-color-scheme: dark) {
     :root {
-      --color-primary: var(--color-indigo-400);
-      --color-primary-foreground: var(--color-gray-950);
-      --color-background: var(--color-gray-950);
-      --color-foreground: var(--color-gray-50);
-      --color-card: var(--color-gray-900);
-      --color-card-foreground: var(--color-gray-50);
-      --color-surface: var(--color-gray-900);
-      --color-surface-elevated: var(--color-gray-800);
-      --color-muted: var(--color-gray-800);
-      --color-muted-foreground: var(--color-gray-400);
-      --color-accent: var(--color-gray-800);
-      --color-accent-foreground: var(--color-gray-50);
-      --color-border: var(--color-gray-700);
-      --color-input: var(--color-gray-700);
-      --color-ring: var(--color-gray-600);
-      --color-destructive: var(--color-red-400);
-      --color-success: var(--color-green-400);
-      --color-warning: var(--color-yellow-400);
+      --color-primary:            var(--color-forest-300);
+      --color-primary-foreground: var(--color-forest-900);
+      --color-background:         #101610;
+      --color-foreground:         var(--color-cream-200);
+      --color-card:               #192019;
+      --color-card-foreground:    var(--color-cream-200);
+      --color-surface:            #192019;
+      --color-surface-elevated:   #202b1f;
+      --color-muted:              #202b1f;
+      --color-muted-foreground:   var(--color-olive-300);
+      --color-accent:             #263323;
+      --color-accent-foreground:  var(--color-cream-200);
+      --color-border:             #2c3c28;
+      --color-input:              #2c3c28;
+      --color-ring:               var(--color-forest-400);
+      --color-destructive:        var(--color-red-400);
+      --color-success:            var(--color-forest-300);
+      --color-warning:            var(--color-amber-400);
 
-      /* ── Chart tokens (dark) ─────────────────────────────── */
-      --color-chart-1: var(--color-indigo-400);
-      --color-chart-2: var(--color-green-400);
-      --color-chart-3: var(--color-yellow-400);
-      --color-chart-4: var(--color-violet-400);
-      --color-chart-5: var(--color-red-400);
+      /* ── Chart tokens (dark forest) ─────────────────────── */
+      --color-chart-1: var(--color-forest-300);
+      --color-chart-2: var(--color-olive-300);
+      --color-chart-3: var(--color-amber-400);
+      --color-chart-4: var(--color-cream-300);
+      --color-chart-5: var(--color-forest-200);
     }
   }
 }
