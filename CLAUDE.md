@@ -293,8 +293,6 @@ GOOGLE_CALENDAR_CLIENT_SECRET=
 
 **Build-time baked in**: Changing `.env` requires restarting `npx expo start`. For production, set in EAS secrets.
 
-
-
 ---
 
 ## Key Integration Points
