@@ -11,12 +11,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAIStore } from '@/store/aiStore';
+import { useLocationStore } from '@/store/locationStore';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function ChatScreen() {
   const [input, setInput] = useState('');
   const scrollRef = useRef<ScrollView>(null);
   const { messages, isLoading, error, sendMessage } = useAIStore();
+  const coords = useLocationStore((s) => s.coords);
+  const permissionStatus = useLocationStore((s) => s.permissionStatus);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -35,6 +38,13 @@ export default function ChatScreen() {
       >
         <View className="px-4 py-3 border-b border-border">
           <Text className="text-lg font-semibold text-text-base">Claude</Text>
+          <Text className="text-xs text-muted mt-0.5">
+            {coords
+              ? `Near ${coords.latitude.toFixed(3)}, ${coords.longitude.toFixed(3)}`
+              : permissionStatus === 'denied'
+                ? 'Location off'
+                : 'Locating…'}
+          </Text>
         </View>
 
         <ScrollView
